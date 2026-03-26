@@ -1,0 +1,12 @@
+package com.tyshko.user.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "patient_profiles")
+data class PatientProfileEntity(
+    @PrimaryKey
+    val userId: Long,
+    val firstName: String,
+    val contactPhoneNumber: String
+)
