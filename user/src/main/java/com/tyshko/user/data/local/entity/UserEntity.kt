@@ -9,5 +9,5 @@ data class UserEntity(
     val id: Long,
     val userName: String,
     val email: String,
-    val role: String
+    val roles: List<String>
 )

@@ -7,6 +7,6 @@ import androidx.room.PrimaryKey
 data class PatientProfileEntity(
     @PrimaryKey
     val userId: Long,
-    val firstName: String,
+    val contactEmail: String,
     val contactPhoneNumber: String
 )

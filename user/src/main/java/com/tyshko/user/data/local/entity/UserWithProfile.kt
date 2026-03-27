@@ -3,7 +3,7 @@ package com.tyshko.user.data.local.entity
 import androidx.room.Embedded
 import androidx.room.Relation
 
-data class UserWithProfiles(
+data class UserWithProfile(
     @Embedded val user: UserEntity,
 
     @Relation(

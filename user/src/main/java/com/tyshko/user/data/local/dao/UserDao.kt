@@ -8,14 +8,14 @@ import androidx.room.Transaction
 import com.tyshko.user.data.local.entity.DoctorProfileEntity
 import com.tyshko.user.data.local.entity.PatientProfileEntity
 import com.tyshko.user.data.local.entity.UserEntity
-import com.tyshko.user.data.local.entity.UserWithProfiles
+import com.tyshko.user.data.local.entity.UserWithProfile
 
 @Dao
 interface UserDao {
 
     @Transaction
     @Query("SELECT * FROM users WHERE id = :userId")
-    suspend fun getUserWithProfiles(userId: String): UserWithProfiles?
+    suspend fun getUserWithProfiles(userId: String): UserWithProfile?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)
