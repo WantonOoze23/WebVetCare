@@ -8,7 +8,6 @@ data class DoctorProfileEntity(
     @PrimaryKey
     val userId: Long,
     val specialization: String,
-    val experienceYears: Int,
     val clinicAddress: String,
     val licenseNumber: String,
     val availability: String
