@@ -45,4 +45,11 @@ dependencies {
     ksp(libs.androidx.room.compiler)
     implementation(libs.room.runtime)
     implementation(libs.androidx.room.ktx)
+
+    implementation(libs.java.jwt)
+
+    implementation(libs.jbcrypt)
+    implementation(libs.androidx.security.crypto)
+
+    implementation(libs.koin.android)
 }

@@ -10,7 +10,7 @@ import com.tyshko.user.data.local.entity.UserEntity
     version = 1,
     exportSchema = false
 )
-abstract class UserDataBase : RoomDatabase(){
+abstract class UserDatabase : RoomDatabase(){
 
     abstract fun userDao(): UserDao
 

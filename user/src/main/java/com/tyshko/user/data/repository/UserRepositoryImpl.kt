@@ -13,7 +13,7 @@ import com.tyshko.user.domain.repository.UserRepository
 class UserRepositoryImpl(
     private val UserDao: UserDao
 ) : UserRepository {
-    override suspend fun getUser(userId: Long): User? {
+    override suspend fun getUser(userId: String): User? {
         val userWithProfile = UserDao.getUserWithProfiles(userId) ?: return null
         
         return User(
@@ -63,7 +63,7 @@ class UserRepositoryImpl(
     }
 
     override suspend fun saveDoctorProfile(
-        userId: Long,
+        userId: String,
         profile: DoctorProfile
     ) {
         val doctorToSave = DoctorProfileEntity(
@@ -78,7 +78,7 @@ class UserRepositoryImpl(
     }
 
     override suspend fun savePatientProfile(
-        userId: Long,
+        userId: String,
         profile: PatientProfile
     ) {
         val patientToSave = PatientProfileEntity(

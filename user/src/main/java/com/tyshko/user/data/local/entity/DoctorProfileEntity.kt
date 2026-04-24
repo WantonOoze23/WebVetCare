@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "doctor_profiles")
 data class DoctorProfileEntity(
     @PrimaryKey
-    val userId: Long,
+    val userId: String,
     val specialization: String,
     val clinicAddress: String,
     val licenseNumber: String,

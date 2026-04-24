@@ -19,7 +19,7 @@ class RsaKeyManager {
         if (!keyStore.containsAlias(alias)){
             val keyPairGenerator = KeyPairGenerator.getInstance(
                 KeyProperties.KEY_ALGORITHM_RSA,
-                alias
+                keyStoreType
             )
             val parameterSpec: KeyGenParameterSpec = KeyGenParameterSpec.Builder(
                 alias,

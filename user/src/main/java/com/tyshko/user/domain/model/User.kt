@@ -1,7 +1,7 @@
 package com.tyshko.user.domain.model
 
 data class User(
-    val id: Long,
+    val id: String,
     val userName: String,
     val email: String,
     val roles: List<Role>,

@@ -15,7 +15,7 @@ interface UserDao {
 
     @Transaction
     @Query("SELECT * FROM users WHERE id = :userId")
-    suspend fun getUserWithProfiles(userId: Long): UserWithProfile?
+    suspend fun getUserWithProfiles(userId: String): UserWithProfile?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)
