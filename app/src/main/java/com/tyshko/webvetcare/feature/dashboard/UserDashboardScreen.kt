@@ -27,6 +27,7 @@ import org.koin.androidx.compose.koinViewModel
 @Composable
 fun UserDashboardScreen(
     modifier: Modifier = Modifier,
+    onNavigateToLogin: () -> Unit = {},
     viewModel: UserDashboardViewModel = koinViewModel()
 ) {
     val state by viewModel.dashboardState.collectAsState()
@@ -36,7 +37,7 @@ fun UserDashboardScreen(
         viewModel.effectFlow.collect { effect ->
             when (effect) {
                 is DashboardContract.Effect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
-                is DashboardContract.Effect.NavigateToLogin -> { /* Обработка в Navigation Graph */ }
+                is DashboardContract.Effect.NavigateToLogin -> onNavigateToLogin()
             }
         }
     }
@@ -282,6 +283,7 @@ fun PatientProfileContent(profile: PatientProfile?) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Patient Information", style = MaterialTheme.typography.titleLarge)
             ProfileInfoRow(label = "Phone", value = profile.contactPhoneNumber)
+            ProfileInfoRow(label = "Email", value = profile.contactEmail)
         }
     }
 }

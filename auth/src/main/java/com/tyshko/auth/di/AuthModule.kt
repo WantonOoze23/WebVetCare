@@ -6,6 +6,7 @@ import com.tyshko.auth.data.local.TokenStorage
 import com.tyshko.auth.data.repository.AuthRepositoryImpl
 import com.tyshko.auth.domain.repository.AuthRepository
 import com.tyshko.auth.domain.usecase.LoginUseCase
+import com.tyshko.auth.domain.usecase.RefreshTokenUseCase
 import com.tyshko.auth.domain.usecase.RegisterUseCase
 import com.tyshko.auth.security.crypto.RsaKeyManager
 import com.tyshko.auth.security.jwt.JwtProvider
@@ -33,4 +34,5 @@ val authModule = module {
 
     factory { LoginUseCase(get(), get()) }
     factory { RegisterUseCase(get(), get()) }
+    factory { RefreshTokenUseCase(get(), get()) }
 }

@@ -14,7 +14,6 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
 
     private val issuer = "WebVetCare_Auth_Service"
 
-    // Custom Algorithm implementation to handle Android Keystore keys
     private val algorithm: Algorithm = object : Algorithm("RS256", "SHA256withRSA") {
         override fun sign(contentBytes: ByteArray): ByteArray {
             val signature = Signature.getInstance("SHA256withRSA")
@@ -33,7 +32,6 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
             verifier.update(contentBytes)
 
             if (!verifier.verify(signatureBytes)) {
-                // 'this' now correctly refers to the anonymous Algorithm object
                 throw SignatureVerificationException(this)
             }
         }

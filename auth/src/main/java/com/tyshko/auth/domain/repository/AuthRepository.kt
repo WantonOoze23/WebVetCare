@@ -7,5 +7,6 @@ interface AuthRepository {
     suspend fun getUserIdByEmail(email: String): String?
 
     fun saveTokens(accessToken: String, refreshToken: String)
+    fun getRefreshToken(): String?
     fun clearSession()
 }

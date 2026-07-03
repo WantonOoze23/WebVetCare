@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tyshko.auth.data.local.TokenStorage
+import com.tyshko.auth.domain.usecase.RefreshTokenUseCase
 import com.tyshko.auth.security.jwt.JwtProvider
 import com.tyshko.user.domain.model.DoctorProfile
 import com.tyshko.user.domain.model.PatientProfile
@@ -19,7 +20,8 @@ import kotlinx.coroutines.launch
 class UserDashboardViewModel(
     private val userRepository: UserRepository,
     private val tokenStorage: TokenStorage,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProvider,
+    private val refreshTokenUseCase: RefreshTokenUseCase
 ) : ViewModel() {
 
     private val _dashboardState = MutableStateFlow(DashboardContract.State())
@@ -47,7 +49,6 @@ class UserDashboardViewModel(
         _dashboardState.update { it.copy(isLoading = true) }
 
         val token = tokenStorage.getAccessToken()
-
         val decodedJwt = token?.let { jwtProvider.validateToken(it) }
         val currentUserId = decodedJwt?.subject
 
@@ -56,10 +57,30 @@ class UserDashboardViewModel(
             Log.d("UserDashboardViewModel", "Fetched user: $user")
             _dashboardState.update { it.copy(user = user, isLoading = false) }
         } else {
-            _dashboardState.update { it.copy(isLoading = false) }
-            sendEffect(DashboardContract.Effect.ShowSnackbar("Session expired. Please log in again."))
-            logout()
+            Log.d("UserDashboardViewModel", "Access token expired, attempting refresh...")
+            val newAccessToken = refreshTokenUseCase()
+
+            if (newAccessToken != null) {
+                val refreshedUserId = jwtProvider.validateToken(newAccessToken)?.subject
+                if (refreshedUserId != null) {
+                    val user = userRepository.getUser(refreshedUserId)
+                    Log.d("UserDashboardViewModel", "Token refreshed, fetched user: $user")
+                    _dashboardState.update { it.copy(user = user, isLoading = false) }
+                    sendEffect(DashboardContract.Effect.ShowSnackbar("Session renewed automatically."))
+                } else {
+                    forceLogout()
+                }
+            } else {
+                Log.d("UserDashboardViewModel", "Refresh token expired, forcing logout.")
+                forceLogout()
+            }
         }
+    }
+
+    private fun forceLogout() {
+        _dashboardState.update { it.copy(isLoading = false) }
+        sendEffect(DashboardContract.Effect.ShowSnackbar("Session expired. Please log in again."))
+        logout()
     }
 
     private fun becomeDoctor(profile: DoctorProfile) = viewModelScope.launch {

@@ -33,6 +33,11 @@ class AuthRepositoryImpl(
 
     override fun saveTokens(accessToken: String, refreshToken: String) {
         tokenStorage.saveAccessToken(accessToken)
+        tokenStorage.saveRefreshToken(refreshToken)
+    }
+
+    override fun getRefreshToken(): String? {
+        return tokenStorage.getRefreshToken()
     }
 
     override fun clearSession() {

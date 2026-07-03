@@ -37,7 +37,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             WebVetCareTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    // Запуск графа навігації
                     NavigationController()
                 }
             }
