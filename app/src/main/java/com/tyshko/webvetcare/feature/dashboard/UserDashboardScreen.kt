@@ -22,6 +22,7 @@ import com.tyshko.user.domain.model.DoctorProfile
 import com.tyshko.user.domain.model.PatientProfile
 import com.tyshko.user.domain.model.Role
 import com.tyshko.user.domain.model.User
+import com.tyshko.webvetcare.feature.settings.SettingsScreen
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -99,6 +100,9 @@ fun UserDashboardScreen(
                     }
                     DashboardContract.DashboardRoute.PatientProfile -> {
                         PatientProfileContent(profile = state.user?.patientProfile)
+                    }
+                    DashboardContract.DashboardRoute.Settings -> {
+                        SettingsScreen()
                     }
                 }
             }
@@ -187,6 +191,15 @@ fun SideNavigationMenu(
         }
 
         Spacer(modifier = Modifier.weight(1f))
+
+        // Settings (visible for all roles)
+        MenuItem(
+            icon = Icons.Default.Settings,
+            text = "Settings",
+            isSelected = currentRoute == DashboardContract.DashboardRoute.Settings,
+            isExpanded = isExpanded,
+            onClick = { onRouteSelected(DashboardContract.DashboardRoute.Settings) }
+        )
 
         // Кнопка логаута
         MenuItem(

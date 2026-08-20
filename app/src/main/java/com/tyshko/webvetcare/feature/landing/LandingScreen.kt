@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.tyshko.webvetcare.firebase.domain.repository.SettingsRepository
 import com.tyshko.webvetcare.ui.theme.Padding
+import org.koin.compose.koinInject
 import kotlin.random.Random
 
 @Composable
@@ -19,13 +21,29 @@ fun LandingScreen(
     modifier: Modifier = Modifier,
     navigationToLoginScreen: () -> Unit,
     navigationToRegisterScreen: () -> Unit,
+    settingsRepository: SettingsRepository = koinInject()
 ) {
+    LaunchedEffect(Unit) {
+        settingsRepository.fetchAndActivate()
+
+    }
+
+    val welcomeMessage = settingsRepository.getWelcomeMessage()
+    val particleColorHex = settingsRepository.getLandingColor()
+    val particleColor = remember(particleColorHex) {
+        try {
+            Color(android.graphics.Color.parseColor(particleColorHex))
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        FloatingParticles()
+        FloatingParticles(particleColor = particleColor)
 
         Column(
             modifier = Modifier
@@ -43,7 +61,7 @@ fun LandingScreen(
             Spacer(modifier = Modifier.height(Padding.huge))
 
             Text(
-                text = "Your online veterinary care platform",
+                text = welcomeMessage.ifEmpty { "Your online veterinary care platform" },
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
@@ -65,7 +83,7 @@ fun LandingScreen(
 }
 
 @Composable
-fun FloatingParticles() {
+fun FloatingParticles(particleColor: Color? = null) {
     val infiniteTransition = rememberInfiniteTransition(label = "particles")
     val progress by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -79,7 +97,8 @@ fun FloatingParticles() {
     val particles = remember { List(30) {
         Triple(Random.nextFloat(), Random.nextFloat(), Random.nextFloat() * 10f + 5f)
     } }
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val fallbackColor = MaterialTheme.colorScheme.primary
+    val color = particleColor ?: fallbackColor
 
     Canvas(modifier = Modifier.fillMaxSize()) {
         particles.forEach { (xRatio, phaseOffset, radius) ->
@@ -87,7 +106,7 @@ fun FloatingParticles() {
             val alpha = if (yOffset > 0.8f) (1f - yOffset) * 5f else yOffset
 
             drawCircle(
-                color = primaryColor.copy(alpha = alpha * 0.3f), // Полупрозрачные частицы
+                color = color.copy(alpha = alpha * 0.3f), // Полупрозрачные частицы
                 radius = radius,
                 center = Offset(x = xRatio * size.width, y = yOffset * size.height)
             )

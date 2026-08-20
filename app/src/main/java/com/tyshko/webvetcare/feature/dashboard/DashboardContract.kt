@@ -12,6 +12,7 @@ class DashboardContract {
         object DoctorProfile : DashboardRoute("Doctor Data")
         object BecomePatient : DashboardRoute("Become Patient")
         object PatientProfile : DashboardRoute("Patient Data")
+        object Settings : DashboardRoute("Settings")
     }
 
     data class State(
