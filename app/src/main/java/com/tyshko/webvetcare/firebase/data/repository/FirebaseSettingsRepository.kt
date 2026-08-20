@@ -5,6 +5,7 @@ import com.google.firebase.remoteconfig.ConfigUpdate
 import com.google.firebase.remoteconfig.ConfigUpdateListener
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigFetchThrottledException
 import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.tyshko.webvetcare.R
 import com.tyshko.webvetcare.firebase.domain.repository.SettingsRepository
@@ -16,15 +17,21 @@ class FirebaseSettingsRepository : SettingsRepository {
 
     init {
         val configSettings = remoteConfigSettings {
-            minimumFetchIntervalInSeconds = 0 // For development; use 3600 in production
+            minimumFetchIntervalInSeconds = 3600
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
         remoteConfig.setDefaultsAsync(R.xml.remote_config_defaults)
+        
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 Log.d("FirebaseSettingsRepo", "Remote config fetched and activated")
             } else {
-                Log.w("FirebaseSettingsRepo", "Failed to fetch remote config", task.exception)
+                val exception = task.exception
+                if (exception is FirebaseRemoteConfigFetchThrottledException) {
+                    Log.w("FirebaseSettingsRepo", "Fetch throttled: ${exception.message}")
+                } else {
+                    Log.w("FirebaseSettingsRepo", "Failed to fetch remote config", exception)
+                }
             }
         }
     }
@@ -50,6 +57,9 @@ class FirebaseSettingsRepository : SettingsRepository {
             val result = remoteConfig.fetchAndActivate().await()
             Log.d("FirebaseSettingsRepo", "fetchAndActivate result: $result")
             result
+        } catch (e: FirebaseRemoteConfigFetchThrottledException) {
+            Log.w("FirebaseSettingsRepo", "Fetch throttled in manual call: ${e.message}")
+            false
         } catch (e: Exception) {
             Log.e("FirebaseSettingsRepo", "fetchAndActivate failed", e)
             false
