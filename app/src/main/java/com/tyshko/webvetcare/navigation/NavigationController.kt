@@ -13,6 +13,10 @@ import com.tyshko.auth.data.local.TokenStorage
 import com.tyshko.auth.security.jwt.JwtProvider
 import com.tyshko.webvetcare.feature.auth.login.LoginScreen
 import com.tyshko.webvetcare.feature.auth.register.RegistrationScreen
+import com.tyshko.webvetcare.feature.dashboard.BecomeDoctorScreen
+import com.tyshko.webvetcare.feature.dashboard.BecomePatientScreen
+import com.tyshko.webvetcare.feature.dashboard.DoctorProfileScreen
+import com.tyshko.webvetcare.feature.dashboard.PatientProfileScreen
 import com.tyshko.webvetcare.feature.dashboard.UserDashboardScreen
 import com.tyshko.webvetcare.feature.landing.LandingScreen
 import org.koin.compose.koinInject
@@ -78,8 +82,21 @@ fun NavigationController() {
                     onNavigateToLogin = {
                         backStack.clear()
                         backStack.add(AppDestination.Login)
-                    }
+                    },
+                    onNavigate = { destination -> backStack.add(destination) }
                 )
+            }
+            entry<AppDestination.BecomeDoctor> {
+                BecomeDoctorScreen()
+            }
+            entry<AppDestination.DoctorProfile> {
+                DoctorProfileScreen()
+            }
+            entry<AppDestination.BecomePatient> {
+                BecomePatientScreen()
+            }
+            entry<AppDestination.PatientProfile> {
+                PatientProfileScreen()
             }
         }
     )

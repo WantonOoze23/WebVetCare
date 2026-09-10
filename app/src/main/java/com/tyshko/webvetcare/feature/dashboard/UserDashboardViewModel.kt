@@ -10,6 +10,7 @@ import com.tyshko.user.domain.model.DoctorProfile
 import com.tyshko.user.domain.model.PatientProfile
 import com.tyshko.user.domain.model.Role
 import com.tyshko.user.domain.repository.UserRepository
+import com.tyshko.webvetcare.navigation.AppDestination
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -39,7 +40,6 @@ class UserDashboardViewModel(
             DashboardContract.Event.FetchUser -> fetchUser()
             DashboardContract.Event.OnLogout -> logout()
             DashboardContract.Event.ToggleMenu -> _dashboardState.update { it.copy(isMenuExpanded = !it.isMenuExpanded) }
-            is DashboardContract.Event.ChangeRoute -> _dashboardState.update { it.copy(currentRoute = event.route) }
             is DashboardContract.Event.BecomeDoctor -> becomeDoctor(event.profile)
             is DashboardContract.Event.BecomePatient -> becomePatient(event.profile)
         }
@@ -92,7 +92,7 @@ class UserDashboardViewModel(
 
         sendEffect(DashboardContract.Effect.ShowSnackbar("Success! You are now a Doctor."))
         fetchUser()
-        onEvent(DashboardContract.Event.ChangeRoute(DashboardContract.DashboardRoute.UserScreen))
+        sendEffect(DashboardContract.Effect.Navigate(AppDestination.Dashboard))
     }
 
     private fun becomePatient(profile: PatientProfile) = viewModelScope.launch {
@@ -106,7 +106,7 @@ class UserDashboardViewModel(
 
         sendEffect(DashboardContract.Effect.ShowSnackbar("Success! You are now a Patient."))
         fetchUser()
-        onEvent(DashboardContract.Event.ChangeRoute(DashboardContract.DashboardRoute.UserScreen))
+        sendEffect(DashboardContract.Effect.Navigate(AppDestination.Dashboard))
     }
 
     private fun logout(){

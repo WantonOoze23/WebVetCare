@@ -38,12 +38,12 @@ class RegisterViewModel(
     }
 
     private fun register() = viewModelScope.launch{
-        val currentState = _registerState
+        val currentState = _registerState.value
 
         _registerState.update { it.copy(isLoading = true) }
         val result = registerUseCase(
-            email = currentState.value.email,
-            password = currentState.value.password
+            email = currentState.email,
+            password = currentState.password
         )
 
 
@@ -57,8 +57,8 @@ class RegisterViewModel(
 
                 val newUser = User(
                     id = result.userId,
-                    userName = currentState.value.userName,
-                    email = currentState.value.email,
+                    userName = currentState.userName,
+                    email = currentState.email,
                     roles = listOf(Role.User),
                     doctorProfile = null,
                     patientProfile = null
