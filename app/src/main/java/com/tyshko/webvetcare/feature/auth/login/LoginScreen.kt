@@ -37,7 +37,6 @@ fun LoginScreen(
     val state by viewModel.loginState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Обробка ефектів (навігація та повідомлення)
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
             when (effect) {
@@ -56,7 +55,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(Padding.extra), // Використовуємо ваш Padding
+                .padding(Padding.extra),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

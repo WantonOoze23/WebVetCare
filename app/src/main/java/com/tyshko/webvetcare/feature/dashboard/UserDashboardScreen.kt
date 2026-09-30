@@ -53,7 +53,6 @@ fun UserDashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Боковое меню (Side Navigation Menu)
             SideNavigationMenu(
                 isExpanded = state.isMenuExpanded,
                 userRoles = state.user?.roles ?: emptyList(),
@@ -62,14 +61,12 @@ fun UserDashboardScreen(
                 onNavigate = { onNavigate(it) }
             )
 
-            // Основной контент
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Header (Имя пользователя)
                 Text(
                     text = if (state.isLoading) "Loading..." else "Welcome, ${state.user?.userName ?: "Guest"}",
                     style = MaterialTheme.typography.headlineMedium
@@ -102,7 +99,6 @@ fun SideNavigationMenu(
             .padding(8.dp),
         horizontalAlignment = if (isExpanded) Alignment.Start else Alignment.CenterHorizontally
     ) {
-        // Кнопка переключения меню
         IconButton(
             onClick = onToggleMenu,
             modifier = Modifier.align(if (isExpanded) Alignment.End else Alignment.CenterHorizontally)
@@ -115,7 +111,6 @@ fun SideNavigationMenu(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Группа: User
         MenuDivider(title = "USER", isExpanded = isExpanded)
         MenuItem(
             icon = Icons.Default.Person,
@@ -125,7 +120,6 @@ fun SideNavigationMenu(
             onClick = { onNavigate(AppDestination.Dashboard) }
         )
 
-        // Группа: Patient
         MenuDivider(title = "PATIENT", isExpanded = isExpanded)
         if (userRoles.contains(Role.Patient)) {
             MenuItem(
@@ -145,7 +139,6 @@ fun SideNavigationMenu(
             )
         }
 
-        // Группа: Doctor
         MenuDivider(title = "DOCTOR", isExpanded = isExpanded)
         if (userRoles.contains(Role.Doctor)) {
             MenuItem(
@@ -167,7 +160,6 @@ fun SideNavigationMenu(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // Кнопка логаута
         MenuItem(
             icon = Icons.Default.ExitToApp,
             text = "Logout",
