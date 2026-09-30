@@ -13,7 +13,7 @@ class RegisterUseCase(
     suspend operator fun invoke(email: String, password: String): AuthResult {
         return try {
             if (authRepository.checkEmailExists(email)) {
-                return AuthResult.Error("User already exists")
+                return AuthResult.Error.UserAlreadyExists
             }
 
             val newUserId = UUID.randomUUID().toString()
@@ -29,7 +29,7 @@ class RegisterUseCase(
             AuthResult.Success(newUserId)
 
         } catch (e: Exception) {
-            AuthResult.Error("Registration failed: ${e.message}")
+            AuthResult.Error.Unknown(e)
         }
     }
 }

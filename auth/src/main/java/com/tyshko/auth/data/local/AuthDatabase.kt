@@ -8,7 +8,7 @@ import com.tyshko.auth.data.local.entity.AuthCredentialEntity
 
 @Database(
     entities = [AuthCredentialEntity::class],
-    version = 1,
+    version = 2,
     autoMigrations = [
         AutoMigration(from = 1, to = 2)
     ]

@@ -1,6 +1,5 @@
 package com.tyshko.webvetcare.feature.auth.login
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tyshko.auth.domain.model.AuthResult
@@ -41,12 +40,23 @@ class LoginViewModel(
         )
         _loginState.update { it.copy(isLoading = false) }
 
-        when(result){
-            is AuthResult.Error -> {
-                sendEffect(LoginContract.Effect.ShowSnackbar(result.message))
-                Log.e("Login", "Login failed: ${result.message}")
+        try {
+            when (result) {
+                is AuthResult.Error -> {
+                    val message = when (result) {
+                        is AuthResult.Error.UserNotFound -> "Incorrect credentials."
+                        is AuthResult.Error.WrongPassword -> "Incorrect credentials."
+                        is AuthResult.Error.UserDataCorrupted -> "Account error. Please contact support."
+                        is AuthResult.Error.Unknown -> "Login failed. Please try again."
+                        else -> "Login failed."
+                    }
+                    sendEffect(LoginContract.Effect.ShowSnackbar(message))
+                }
+
+                is AuthResult.Success -> sendEffect(LoginContract.Effect.Navigate(AppDestination.Dashboard))
             }
-            is AuthResult.Success -> sendEffect(LoginContract.Effect.Navigate(AppDestination.Dashboard))
+        } finally {
+            _loginState.update { it.copy(isLoading = false) }
         }
     }
 

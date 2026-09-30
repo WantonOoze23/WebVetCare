@@ -12,15 +12,15 @@ class LoginUseCase(
     suspend operator fun invoke(email: String, password: String): AuthResult {
         return try {
             val storedHash = authRepository.getPasswordHash(email)
-                ?: return AuthResult.Error("Incorrect input")
+                ?: return AuthResult.Error.UserNotFound
 
             val isPasswordValid = PasswordHasher.verifyPassword(password, storedHash)
             if (!isPasswordValid) {
-                return AuthResult.Error("Wrong password")
+                return AuthResult.Error.WrongPassword
             }
 
             val userId = authRepository.getUserIdByEmail(email)
-                ?: return AuthResult.Error("User data error")
+                ?: return AuthResult.Error.UserDataCorrupted
 
             val accessToken = jwtProvider.generateAccessToken(userId, listOf("USER"))
             val refreshToken = jwtProvider.generateRefreshToken(userId)
@@ -30,7 +30,7 @@ class LoginUseCase(
             AuthResult.Success(userId)
 
         } catch (e: Exception) {
-            AuthResult.Error("Login failed: ${e.message}")
+            AuthResult.Error.Unknown(e)
         }
     }
 }

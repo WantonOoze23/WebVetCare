@@ -48,31 +48,39 @@ class RegisterViewModel(
         )
 
 
-        when(result){
-            is AuthResult.Error -> {
-                _registerState.update { it.copy(isLoading = false) }
-                Log.e("Registration", "Registration failed: ${result.message}")
-                sendEffect(RegisterContract.Effect.ShowSnackbar(result.message))
+        try {
+            when (result) {
+                is AuthResult.Error -> {
+                    val message = when (result) {
+                        is AuthResult.Error.UserAlreadyExists -> "An account with this email already exists."
+                        is AuthResult.Error.Unknown -> "Registration failed. Please try again."
+                        else -> "Registration failed."
+                    }
+                    sendEffect(RegisterContract.Effect.ShowSnackbar(message))
+                }
+
+                is AuthResult.Success -> {
+
+                    val newUser = User(
+                        id = result.userId,
+                        userName = currentState.userName,
+                        email = currentState.email,
+                        roles = listOf(Role.User),
+                        doctorProfile = null,
+                        patientProfile = null
+                    )
+
+                    userRepository.saveUser(newUser)
+
+                    _registerState.update { it.copy(isLoading = false) }
+
+                    Log.d("Registration db", "Registration result: $newUser")
+
+                    sendEffect(RegisterContract.Effect.Navigate(AppDestination.Dashboard))
+                }
             }
-            is AuthResult.Success -> {
-
-                val newUser = User(
-                    id = result.userId,
-                    userName = currentState.userName,
-                    email = currentState.email,
-                    roles = listOf(Role.User),
-                    doctorProfile = null,
-                    patientProfile = null
-                )
-
-                userRepository.saveUser(newUser)
-
-                _registerState.update { it.copy(isLoading = false) }
-
-                Log.d("Registration db", "Registration result: $newUser")
-
-                sendEffect(RegisterContract.Effect.Navigate(AppDestination.Dashboard))
-            }
+        } finally {
+            _registerState.update { it.copy(isLoading = false) }
         }
         Log.d("Registration", "Registration result: $result")
     }
