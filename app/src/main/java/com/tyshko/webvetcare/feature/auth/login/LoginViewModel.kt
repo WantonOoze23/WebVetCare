@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tyshko.auth.domain.model.AuthResult
 import com.tyshko.auth.domain.usecase.LoginUseCase
+import com.tyshko.webvetcare.navigation.AppDestination
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +29,7 @@ class LoginViewModel(
             is LoginContract.Event.OnEmailChanged -> _loginState.update { it.copy(email = event.email) }
             LoginContract.Event.OnLoginClicked -> login()
             is LoginContract.Event.OnPasswordChanged -> _loginState.update { it.copy(password = event.password) }
-            LoginContract.Event.OnRegisterClicked -> sendEffect(LoginContract.Effect.NavigateToRegister)
+            LoginContract.Event.OnRegisterClicked -> sendEffect(LoginContract.Effect.Navigate(AppDestination.Register))
         }
     }
 
@@ -45,7 +46,7 @@ class LoginViewModel(
                 sendEffect(LoginContract.Effect.ShowSnackbar(result.message))
                 Log.e("Login", "Login failed: ${result.message}")
             }
-            is AuthResult.Success -> sendEffect(LoginContract.Effect.NavigateToDashboard)
+            is AuthResult.Success -> sendEffect(LoginContract.Effect.Navigate(AppDestination.Dashboard))
         }
     }
 

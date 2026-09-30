@@ -24,25 +24,30 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import com.tyshko.webvetcare.navigation.AppDestination
 import com.tyshko.webvetcare.ui.theme.Padding
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun RegistrationScreen(
     modifier: Modifier = Modifier,
-    onNavigateToDashboard: () -> Unit,
-    onNavigateToLogin: () -> Unit,
+    onNavigate : (AppDestination) -> Unit,
     viewModel: RegisterViewModel = koinViewModel()
 ) {
     val state by viewModel.registerState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    LaunchedEffect(Unit) {
-        viewModel.effectFlow.collect { effect ->
-            when (effect) {
-                is RegisterContract.Effect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
-                is RegisterContract.Effect.NavigateToDashboard -> onNavigateToDashboard()
-                is RegisterContract.Effect.NavigateToLogin -> onNavigateToLogin()
+    LaunchedEffect(lifecycleOwner.lifecycle) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewModel.effectFlow.collect { effect ->
+                when (effect) {
+                    is RegisterContract.Effect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
+                    is RegisterContract.Effect.Navigate -> onNavigate(effect.destination)
+                }
             }
         }
     }

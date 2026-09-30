@@ -1,5 +1,7 @@
 package com.tyshko.webvetcare.feature.auth.register
 
+import com.tyshko.webvetcare.navigation.AppDestination
+
 class RegisterContract {
     data class State(
         val email: String = "",
@@ -18,7 +20,6 @@ class RegisterContract {
 
     sealed class Effect {
         data class ShowSnackbar(val message: String) : Effect()
-        object NavigateToLogin : Effect()
-        object NavigateToDashboard : Effect()
+        data class Navigate(val destination: AppDestination) : Effect()
     }
 }

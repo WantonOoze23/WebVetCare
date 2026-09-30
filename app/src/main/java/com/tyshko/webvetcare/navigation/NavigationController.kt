@@ -60,21 +60,29 @@ fun NavigationController() {
 
                     entry<AppDestination.Login> {
                         LoginScreen(
-                            onNavigateToDashboard = {
-                                backStack.clear()
-                                backStack.add(AppDestination.Dashboard)
-                            },
-                            onNavigateToRegister = { backStack.add(AppDestination.Register) }
+                            onNavigate = { destination ->
+                                when (destination) {
+                                    AppDestination.Dashboard -> {
+                                        backStack.clear()
+                                        backStack.add(destination)
+                                    }
+                                    else -> backStack.add(destination)
+                                }
+                            }
                         )
                     }
 
                     entry<AppDestination.Register> {
                         RegistrationScreen(
-                            onNavigateToDashboard = {
-                                backStack.clear()
-                                backStack.add(AppDestination.Dashboard)
-                            },
-                            onNavigateToLogin = { backStack.add(AppDestination.Login) }
+                            onNavigate = { destination ->
+                                when (destination) {
+                                    AppDestination.Dashboard -> {
+                                        backStack.clear()
+                                        backStack.add(destination)
+                                    }
+                                    else -> backStack.add(destination)
+                                }
+                            }
                         )
                     }
 

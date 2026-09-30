@@ -8,6 +8,7 @@ import com.tyshko.auth.domain.usecase.RegisterUseCase
 import com.tyshko.user.domain.model.Role
 import com.tyshko.user.domain.model.User
 import com.tyshko.user.domain.repository.UserRepository
+import com.tyshko.webvetcare.navigation.AppDestination
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,7 +32,7 @@ class RegisterViewModel(
         when(event){
             is RegisterContract.Event.OnEmailChanged -> _registerState.update { it.copy(email = event.email) }
             is RegisterContract.Event.OnUserNameChanged -> _registerState.update { it.copy(userName = event.userName) }
-            RegisterContract.Event.OnLoginClicked -> sendEffect(RegisterContract.Effect.NavigateToLogin)
+            RegisterContract.Event.OnLoginClicked -> sendEffect(RegisterContract.Effect.Navigate(AppDestination.Login))
             is RegisterContract.Event.OnPasswordChanged -> _registerState.update { it.copy(password = event.password) }
             RegisterContract.Event.OnRegisterClicked -> register()
         }
@@ -70,7 +71,7 @@ class RegisterViewModel(
 
                 Log.d("Registration db", "Registration result: $newUser")
 
-                sendEffect(RegisterContract.Effect.NavigateToDashboard)
+                sendEffect(RegisterContract.Effect.Navigate(AppDestination.Dashboard))
             }
         }
         Log.d("Registration", "Registration result: $result")
