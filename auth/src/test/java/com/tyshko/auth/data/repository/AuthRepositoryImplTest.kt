@@ -25,79 +25,125 @@ class AuthRepositoryImplTest {
         authRepository = AuthRepositoryImpl(mockAuthDao, mockTokenStorage)
     }
 
+    // ──────────────────────────────────────────────────────────
+    // checkEmailExists — нормализация email (lowercase + trim)
+    // ──────────────────────────────────────────────────────────
+
     @Test
     fun `checkEmailExists returns true when email exists`() = runTest {
-        val email = "test@test.com"
-        coEvery { mockAuthDao.isEmailExists(email) } returns true
+        // DAO получает нормализованный email
+        coEvery { mockAuthDao.isEmailExists("test@test.com") } returns true
 
-        val result = authRepository.checkEmailExists(email)
+        val result = authRepository.checkEmailExists("test@test.com")
 
         assertTrue(result)
-        coVerify(exactly = 1) { mockAuthDao.isEmailExists(email) }
+        coVerify(exactly = 1) { mockAuthDao.isEmailExists("test@test.com") }
     }
 
     @Test
-    fun `saveCredentials inserts entity correctly`() = runTest {
+    fun `checkEmailExists normalizes email to lowercase`() = runTest {
+        // Repository должен передать lowercase в DAO
+        coEvery { mockAuthDao.isEmailExists("user@test.com") } returns false
+
+        authRepository.checkEmailExists("User@TEST.com")
+
+        // Проверяем что в DAO попал именно нормализованный вариант
+        coVerify(exactly = 1) { mockAuthDao.isEmailExists("user@test.com") }
+    }
+
+    @Test
+    fun `checkEmailExists trims whitespace before querying`() = runTest {
+        coEvery { mockAuthDao.isEmailExists("user@test.com") } returns true
+
+        authRepository.checkEmailExists("  user@test.com  ")
+
+        coVerify(exactly = 1) { mockAuthDao.isEmailExists("user@test.com") }
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // saveCredentials
+    // ──────────────────────────────────────────────────────────
+
+    @Test
+    fun `saveCredentials inserts entity with normalized email`() = runTest {
         val id = "1"
-        val email = "test@test.com"
+        val rawEmail = "Test@Test.com"
+        val normalizedEmail = "test@test.com"
         val passwordHash = "hash"
-        val expectedEntity = AuthCredentialEntity(id, email, passwordHash)
+        // Entity должна содержать нормализованный email
+        val expectedEntity = AuthCredentialEntity(id, normalizedEmail, passwordHash)
 
         coEvery { mockAuthDao.insertCredentials(expectedEntity) } returns Unit
 
-        authRepository.saveCredentials(id, email, passwordHash)
+        authRepository.saveCredentials(id, rawEmail, passwordHash)
 
         coVerify(exactly = 1) { mockAuthDao.insertCredentials(expectedEntity) }
     }
 
-    @Test
-    fun `getPasswordHash returns hash when email exists`() = runTest {
-        val email = "test@test.com"
-        val expectedHash = "hash123"
-        coEvery { mockAuthDao.getPasswordHashByEmail(email) } returns expectedHash
+    // ──────────────────────────────────────────────────────────
+    // getPasswordHash
+    // ──────────────────────────────────────────────────────────
 
-        val result = authRepository.getPasswordHash(email)
+    @Test
+    fun `getPasswordHash returns hash for normalized email`() = runTest {
+        val expectedHash = "hash123"
+        coEvery { mockAuthDao.getPasswordHashByEmail("test@test.com") } returns expectedHash
+
+        // Передаём с пробелами и uppercase — repository обязан нормализовать
+        val result = authRepository.getPasswordHash("  TEST@test.com  ")
 
         assertEquals(expectedHash, result)
-        coVerify(exactly = 1) { mockAuthDao.getPasswordHashByEmail(email) }
+        coVerify(exactly = 1) { mockAuthDao.getPasswordHashByEmail("test@test.com") }
     }
 
     @Test
-    fun `getUserIdByEmail returns id when email exists`() = runTest {
-        val email = "test@test.com"
-        val expectedId = "user-123"
-        coEvery { mockAuthDao.getUserIdByEmail(email) } returns expectedId
+    fun `getPasswordHash returns null when email not found`() = runTest {
+        coEvery { mockAuthDao.getPasswordHashByEmail(any()) } returns null
 
-        val result = authRepository.getUserIdByEmail(email)
+        val result = authRepository.getPasswordHash("missing@test.com")
+
+        assertEquals(null, result)
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // getUserIdByEmail
+    // ──────────────────────────────────────────────────────────
+
+    @Test
+    fun `getUserIdByEmail returns id for normalized email`() = runTest {
+        val expectedId = "user-123"
+        coEvery { mockAuthDao.getUserIdByEmail("test@test.com") } returns expectedId
+
+        val result = authRepository.getUserIdByEmail("TEST@TEST.COM")
 
         assertEquals(expectedId, result)
-        coVerify(exactly = 1) { mockAuthDao.getUserIdByEmail(email) }
+        coVerify(exactly = 1) { mockAuthDao.getUserIdByEmail("test@test.com") }
+    }
+
+    // ──────────────────────────────────────────────────────────
+    // Token management
+    // ──────────────────────────────────────────────────────────
+
+    @Test
+    fun `saveTokens saves both access and refresh tokens to storage`() {
+        authRepository.saveTokens("access_token", "refresh_token")
+
+        verify(exactly = 1) { mockTokenStorage.saveAccessToken("access_token") }
+        verify(exactly = 1) { mockTokenStorage.saveRefreshToken("refresh_token") }
     }
 
     @Test
-    fun `saveTokens saves both access and refresh tokens`() {
-        val accessToken = "access_token"
-        val refreshToken = "refresh_token"
-
-        authRepository.saveTokens(accessToken, refreshToken)
-
-        verify(exactly = 1) { mockTokenStorage.saveAccessToken(accessToken) }
-        verify(exactly = 1) { mockTokenStorage.saveRefreshToken(refreshToken) }
-    }
-
-    @Test
-    fun `getRefreshToken returns token from storage`() {
-        val expectedToken = "refresh_token_123"
-        every { mockTokenStorage.getRefreshToken() } returns expectedToken
+    fun `getRefreshToken delegates to TokenStorage`() {
+        every { mockTokenStorage.getRefreshToken() } returns "refresh_token_123"
 
         val result = authRepository.getRefreshToken()
 
-        assertEquals(expectedToken, result)
+        assertEquals("refresh_token_123", result)
         verify(exactly = 1) { mockTokenStorage.getRefreshToken() }
     }
 
     @Test
-    fun `clearSession clears tokens in storage`() {
+    fun `clearSession clears all tokens from storage`() {
         authRepository.clearSession()
 
         verify(exactly = 1) { mockTokenStorage.clearTokens() }

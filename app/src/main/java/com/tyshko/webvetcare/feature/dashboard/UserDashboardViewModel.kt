@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.tyshko.auth.data.local.TokenStorage
 import com.tyshko.auth.domain.usecase.RefreshTokenUseCase
 import com.tyshko.auth.security.jwt.JwtProvider
+import com.tyshko.auth.security.jwt.TokenValidationResult
 import com.tyshko.user.domain.model.DoctorProfile
 import com.tyshko.user.domain.model.PatientProfile
 import com.tyshko.user.domain.model.Role
@@ -48,32 +49,55 @@ class UserDashboardViewModel(
     private fun fetchUser() = viewModelScope.launch {
         _dashboardState.update { it.copy(isLoading = true) }
 
-        val token = tokenStorage.getAccessToken()
-        val decodedJwt = token?.let { jwtProvider.validateToken(it) }
-        val currentUserId = decodedJwt?.subject
 
-        if (currentUserId != null) {
-            val user = userRepository.getUser(currentUserId)
-            Log.d("UserDashboardViewModel", "Fetched user: $user")
-            _dashboardState.update { it.copy(user = user, isLoading = false) }
-        } else {
-            Log.d("UserDashboardViewModel", "Access token expired, attempting refresh...")
-            val newAccessToken = refreshTokenUseCase()
+        try{
+            val token = tokenStorage.getAccessToken()
 
-            if (newAccessToken != null) {
-                val refreshedUserId = jwtProvider.validateToken(newAccessToken)?.subject
-                if (refreshedUserId != null) {
-                    val user = userRepository.getUser(refreshedUserId)
-                    Log.d("UserDashboardViewModel", "Token refreshed, fetched user: $user")
-                    _dashboardState.update { it.copy(user = user, isLoading = false) }
-                    sendEffect(DashboardContract.Effect.ShowSnackbar("Session renewed automatically."))
+            val currentUserId : String? = when(val validation = token?.let { jwtProvider.validateToken(it) }) {
+                is TokenValidationResult.Valid -> validation.decodedJWT.subject
+                is TokenValidationResult.Expired -> null
+                is TokenValidationResult.InvalidSignature -> {
+                    Log.w("UserDashboardViewModel", "Security: invalid token signature detected")
+                    forceLogout()
+                    return@launch
+                }
+                is TokenValidationResult.MalformedToken -> {
+                    forceLogout()
+                    return@launch
+                }
+                null -> null
+            }
+
+            if (currentUserId != null){
+                val user = userRepository.getUser(currentUserId)
+                Log.d("UserDashboardViewModel", "Fetched user: $user")
+                _dashboardState.update { it.copy(user = user, isLoading = false) }
+            } else {
+                Log.d("UserDashboardViewModel", "Access token expired, attempting refresh...")
+                val newAccessToken = refreshTokenUseCase()
+
+                if (newAccessToken != null) {
+                    val refreshedUserId = when(val refreshUser = jwtProvider.validateToken(newAccessToken)){
+                        is TokenValidationResult.Valid -> refreshUser.decodedJWT.subject
+                        else -> null
+                    }
+
+                    if (refreshedUserId != null) {
+                        val user = userRepository.getUser(refreshedUserId)
+                        Log.d("UserDashboardViewModel", "Token refreshed, fetched user: $user")
+                        _dashboardState.update { it.copy(user = user, isLoading = false) }
+                        sendEffect(DashboardContract.Effect.ShowSnackbar("Session renewed automatically."))
+                    } else {
+                        forceLogout()
+                    }
                 } else {
+                    Log.d("UserDashboardViewModel", "Refresh token expired, forcing logout.")
                     forceLogout()
                 }
-            } else {
-                Log.d("UserDashboardViewModel", "Refresh token expired, forcing logout.")
-                forceLogout()
             }
+
+        } finally {
+            _dashboardState.update { if (it.isLoading) it.copy(isLoading = false) else it }
         }
     }
 

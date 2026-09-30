@@ -3,6 +3,7 @@ package com.tyshko.auth.domain.usecase
 import com.tyshko.auth.domain.RolesProvider
 import com.tyshko.auth.domain.repository.AuthRepository
 import com.tyshko.auth.security.jwt.JwtProvider
+import com.tyshko.auth.security.jwt.TokenValidationResult
 
 
 class RefreshTokenUseCase(
@@ -13,7 +14,12 @@ class RefreshTokenUseCase(
     suspend operator fun invoke(): String? {
         val refreshToken = authRepository.getRefreshToken() ?: return null
 
-        val decoded = jwtProvider.validateToken(refreshToken) ?: return null
+        val decoded = when (val validation = jwtProvider.validateToken(refreshToken)) {
+            is TokenValidationResult.Valid -> validation.decodedJWT
+            is TokenValidationResult.Expired -> return null
+            is TokenValidationResult.InvalidSignature -> return null
+            is TokenValidationResult.MalformedToken -> return null
+        }
 
         val userId = decoded.subject ?: return null
 

@@ -12,7 +12,6 @@ import io.mockk.mockkObject
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
 import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -35,37 +34,42 @@ class RegisterUseCaseTest {
     }
 
     @Test
-    fun `invoke should return Error when email already exists`() = runTest {
-        val email = "existing@test.com"
-        val password = "password"
+    fun `invoke returns UserAlreadyExists when email is taken`() = runTest {
+        coEvery { mockAuthRepository.checkEmailExists(any()) } returns true
 
-        coEvery { mockAuthRepository.checkEmailExists(email) } returns true
+        val result = registerUseCase("existing@test.com", "password")
 
-        val result = registerUseCase(email, password)
-
-        assertTrue(result is AuthResult.Error)
-        assertEquals("User already exists", (result as AuthResult.Error).message)
+        assertTrue(result is AuthResult.Error.UserAlreadyExists)
     }
 
     @Test
-    fun `invoke should return Success and save credentials and tokens for new user`() = runTest {
+    fun `invoke returns Success and saves credentials and tokens for new user`() = runTest {
         val email = "new@test.com"
         val password = "password"
         val hashedPassword = "hashed_password"
         val accessToken = "access_token"
         val refreshToken = "refresh_token"
 
-        coEvery { mockAuthRepository.checkEmailExists(email) } returns false
+        coEvery { mockAuthRepository.checkEmailExists(any()) } returns false
         every { PasswordHasher.hashPassword(password) } returns hashedPassword
-        
         every { mockJwtProvider.generateAccessToken(any(), any()) } returns accessToken
         every { mockJwtProvider.generateRefreshToken(any()) } returns refreshToken
 
         val result = registerUseCase(email, password)
 
         assertTrue(result is AuthResult.Success)
-        
         coVerify(exactly = 1) { mockAuthRepository.saveCredentials(any(), email, hashedPassword) }
         coVerify(exactly = 1) { mockAuthRepository.saveTokens(accessToken, refreshToken) }
+    }
+
+    @Test
+    fun `invoke returns Unknown error when repository throws exception`() = runTest {
+        val exception = RuntimeException("DB error")
+        coEvery { mockAuthRepository.checkEmailExists(any()) } throws exception
+
+        val result = registerUseCase("user@test.com", "password")
+
+        assertTrue(result is AuthResult.Error.Unknown)
+        assertTrue((result as AuthResult.Error.Unknown).cause == exception)
     }
 }

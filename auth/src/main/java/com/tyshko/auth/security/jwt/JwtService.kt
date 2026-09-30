@@ -2,7 +2,9 @@ package com.tyshko.auth.security.jwt
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.exceptions.SignatureVerificationException
+import com.auth0.jwt.exceptions.TokenExpiredException
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.tyshko.auth.security.crypto.RsaKeyManager
 import java.security.Signature
@@ -62,15 +64,20 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
             .sign(algorithm)
     }
 
-    fun validateToken(token: String): DecodedJWT? {
+    fun validateToken(token: String): TokenValidationResult {
         return try {
-            val verifier = JWT.require(algorithm)
+            val verifier = JWT
+                .require(algorithm)
                 .withIssuer(issuer)
                 .build()
 
-            verifier.verify(token)
-        } catch (e: Exception) {
-            null
+            TokenValidationResult.Valid(verifier.verify(token))
+        } catch (e: TokenExpiredException) {
+            TokenValidationResult.Expired
+        } catch( e: SignatureVerificationException){
+            TokenValidationResult.InvalidSignature
+        } catch (e: JWTVerificationException) {
+            TokenValidationResult.MalformedToken
         }
     }
 }

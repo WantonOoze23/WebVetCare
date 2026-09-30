@@ -35,51 +35,39 @@ class LoginUseCaseTest {
     }
 
     @Test
-    fun `invoke should return Error when email does not exist`() = runTest {
-        val email = "unknown@test.com"
-        val password = "password"
+    fun `invoke returns UserNotFound when email has no password hash`() = runTest {
+        coEvery { mockAuthRepository.getPasswordHash(any()) } returns null
 
-        coEvery { mockAuthRepository.getPasswordHash(email) } returns null
+        val result = loginUseCase("unknown@test.com", "password")
 
-        val result = loginUseCase(email, password)
-
-        assertTrue(result is AuthResult.Error)
-        assertEquals("Incorrect input", (result as AuthResult.Error).message)
+        assertTrue(result is AuthResult.Error.UserNotFound)
     }
 
     @Test
-    fun `invoke should return Error when password is incorrect`() = runTest {
-        val email = "user@test.com"
-        val password = "wrong_password"
+    fun `invoke returns WrongPassword when password does not match`() = runTest {
         val storedHash = "stored_hash"
+        coEvery { mockAuthRepository.getPasswordHash(any()) } returns storedHash
+        every { PasswordHasher.verifyPassword("wrong", storedHash) } returns false
 
-        coEvery { mockAuthRepository.getPasswordHash(email) } returns storedHash
-        every { PasswordHasher.verifyPassword(password, storedHash) } returns false
+        val result = loginUseCase("user@test.com", "wrong")
 
-        val result = loginUseCase(email, password)
-
-        assertTrue(result is AuthResult.Error)
-        assertEquals("Wrong password", (result as AuthResult.Error).message)
+        assertTrue(result is AuthResult.Error.WrongPassword)
     }
 
     @Test
-    fun `invoke should return Error when user id not found after valid password`() = runTest {
-        val email = "user@test.com"
-        val password = "password"
+    fun `invoke returns UserDataCorrupted when userId is missing after valid password`() = runTest {
         val storedHash = "stored_hash"
+        coEvery { mockAuthRepository.getPasswordHash(any()) } returns storedHash
+        every { PasswordHasher.verifyPassword("password", storedHash) } returns true
+        coEvery { mockAuthRepository.getUserIdByEmail(any()) } returns null
 
-        coEvery { mockAuthRepository.getPasswordHash(email) } returns storedHash
-        every { PasswordHasher.verifyPassword(password, storedHash) } returns true
-        coEvery { mockAuthRepository.getUserIdByEmail(email) } returns null
+        val result = loginUseCase("user@test.com", "password")
 
-        val result = loginUseCase(email, password)
-
-        assertTrue(result is AuthResult.Error)
-        assertEquals("User data error", (result as AuthResult.Error).message)
+        assertTrue(result is AuthResult.Error.UserDataCorrupted)
     }
 
     @Test
-    fun `invoke should return Success and save tokens when credentials are valid`() = runTest {
+    fun `invoke returns Success and saves tokens when credentials are valid`() = runTest {
         val email = "user@test.com"
         val password = "password"
         val storedHash = "stored_hash"
@@ -97,7 +85,17 @@ class LoginUseCaseTest {
 
         assertTrue(result is AuthResult.Success)
         assertEquals(userId, (result as AuthResult.Success).userId)
-        
         coVerify(exactly = 1) { mockAuthRepository.saveTokens(accessToken, refreshToken) }
+    }
+
+    @Test
+    fun `invoke returns Unknown error when repository throws exception`() = runTest {
+        val exception = RuntimeException("DB unavailable")
+        coEvery { mockAuthRepository.getPasswordHash(any()) } throws exception
+
+        val result = loginUseCase("user@test.com", "password")
+
+        assertTrue(result is AuthResult.Error.Unknown)
+        assertEquals(exception, (result as AuthResult.Error.Unknown).cause)
     }
 }

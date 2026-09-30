@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.tyshko.auth.data.local.TokenStorage
 import com.tyshko.auth.domain.usecase.RefreshTokenUseCase
 import com.tyshko.auth.security.jwt.JwtProvider
+import com.tyshko.auth.security.jwt.TokenValidationResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,13 +28,13 @@ class SessionViewModel(
     private fun checkSession() = viewModelScope.launch {
         val destination = withContext(Dispatchers.IO) {
             val accessToken = tokenStorage.getAccessToken()
+
+            val isAccessValid = accessToken != null && jwtProvider.validateToken(accessToken) is TokenValidationResult.Valid
+
             when {
-                accessToken != null && jwtProvider.validateToken(accessToken) != null ->
-                    AppDestination.Dashboard
-                refreshTokenUseCase() != null ->
-                    AppDestination.Dashboard
-                else ->
-                    AppDestination.Landing
+                isAccessValid -> AppDestination.Dashboard
+                refreshTokenUseCase() != null -> AppDestination.Dashboard
+                else -> AppDestination.Landing
             }
         }
         _sessionState.value = SessionState.Ready(destination)
