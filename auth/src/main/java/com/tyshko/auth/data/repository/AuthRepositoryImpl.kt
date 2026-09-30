@@ -10,25 +10,28 @@ class AuthRepositoryImpl(
     private val tokenStorage: TokenStorage
 ) : AuthRepository {
 
+    private fun String.normalizeEmail() = this.trim().lowercase()
+
+
     override suspend fun checkEmailExists(email: String): Boolean {
-        return authDao.isEmailExists(email)
+        return authDao.isEmailExists(email.normalizeEmail())
     }
 
     override suspend fun saveCredentials(id: String, email: String, passwordHash: String) {
         val entity = AuthCredentialEntity(
             id = id,
-            email = email,
+            email = email.normalizeEmail(),
             passwordHash = passwordHash
         )
         authDao.insertCredentials(entity)
     }
 
     override suspend fun getPasswordHash(email: String): String? {
-        return authDao.getPasswordHashByEmail(email)
+        return authDao.getPasswordHashByEmail(email.normalizeEmail())
     }
 
     override suspend fun getUserIdByEmail(email: String): String? {
-        return authDao.getUserIdByEmail(email)
+        return authDao.getUserIdByEmail(email.normalizeEmail())
     }
 
     override fun saveTokens(accessToken: String, refreshToken: String) {
