@@ -34,5 +34,5 @@ val authModule = module {
 
     factory { LoginUseCase(get(), get()) }
     factory { RegisterUseCase(get(), get()) }
-    factory { RefreshTokenUseCase(get(), get()) }
+    factory { RefreshTokenUseCase(get(), get(), get()) }
 }
