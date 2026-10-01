@@ -14,11 +14,9 @@ import java.util.Date
 
 class JwtProvider(private val keyManager: RsaKeyManager) {
 
-    private val issuer = "WebVetCare_Auth_Service"
-
-    private val algorithm: Algorithm = object : Algorithm("RS256", "SHA256withRSA") {
+    private val algorithm: Algorithm = object : Algorithm(ALGORITHM_NAME, SUGNATURE_ALGHORITM) {
         override fun sign(contentBytes: ByteArray): ByteArray {
-            val signature = Signature.getInstance("SHA256withRSA")
+            val signature = Signature.getInstance(SUGNATURE_ALGHORITM)
             signature.initSign(keyManager.providePrivateKey())
             signature.update(contentBytes)
             return signature.sign()
@@ -29,7 +27,7 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
             val signatureBytes = Base64.getUrlDecoder().decode(jwt.signature)
             val contentBytes = "${jwt.header}.${jwt.payload}".toByteArray()
 
-            val verifier = Signature.getInstance("SHA256withRSA")
+            val verifier = Signature.getInstance(SUGNATURE_ALGHORITM)
             verifier.initVerify(publicKey)
             verifier.update(contentBytes)
 
@@ -41,12 +39,12 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
 
     fun generateAccessToken(userId: String, roles: List<String>): String {
         val now = System.currentTimeMillis()
-        val validity = 15 * 60 * 1000
+        val validity = ACCESS_TOKEN_TLL_MS
 
         return JWT.create()
-            .withIssuer(issuer)
+            .withIssuer(ISSUER)
             .withSubject(userId)
-            .withClaim("roles", roles)
+            .withClaim(CLAIM_ROLES, roles)
             .withIssuedAt(Date(now))
             .withExpiresAt(Date(now + validity))
             .sign(algorithm)
@@ -54,10 +52,10 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
 
     fun generateRefreshToken(userId: String): String {
         val now = System.currentTimeMillis()
-        val validity = 30L * 24 * 60 * 60 * 1000
+        val validity = REFRESH_TOKEN_TTL_MS
 
         return JWT.create()
-            .withIssuer(issuer)
+            .withIssuer(ISSUER)
             .withSubject(userId)
             .withIssuedAt(Date(now))
             .withExpiresAt(Date(now + validity))
@@ -68,7 +66,7 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
         return try {
             val verifier = JWT
                 .require(algorithm)
-                .withIssuer(issuer)
+                .withIssuer(ISSUER)
                 .build()
 
             TokenValidationResult.Valid(verifier.verify(token))
@@ -79,5 +77,14 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
         } catch (e: JWTVerificationException) {
             TokenValidationResult.MalformedToken
         }
+    }
+
+    companion object{
+        private val ISSUER = "WebVetCare_Auth_Service"
+        private val ALGORITHM_NAME = "RS256"
+        private val SUGNATURE_ALGHORITM = "SHA256withRSA"
+        private val CLAIM_ROLES = "roles"
+        const val ACCESS_TOKEN_TLL_MS = 15L * 60 * 1000L
+        const val REFRESH_TOKEN_TTL_MS = 30L * 24 * 60 * 60 * 1000L
     }
 }
