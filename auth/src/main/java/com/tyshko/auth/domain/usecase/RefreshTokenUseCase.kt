@@ -2,13 +2,13 @@ package com.tyshko.auth.domain.usecase
 
 import com.tyshko.auth.domain.RolesProvider
 import com.tyshko.auth.domain.repository.AuthRepository
-import com.tyshko.auth.security.jwt.JwtProvider
+import com.tyshko.auth.security.JwtProviderContract
 import com.tyshko.auth.security.jwt.TokenValidationResult
 
 
 class RefreshTokenUseCase(
     private val authRepository: AuthRepository,
-    private val jwtProvider: JwtProvider,
+    private val jwtProvider: JwtProviderContract,
     private val rolesProvider: RolesProvider
 ) {
     suspend operator fun invoke(): String? {

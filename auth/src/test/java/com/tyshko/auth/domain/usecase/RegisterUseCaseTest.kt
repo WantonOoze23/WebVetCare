@@ -2,16 +2,14 @@ package com.tyshko.auth.domain.usecase
 
 import com.tyshko.auth.domain.model.AuthResult
 import com.tyshko.auth.domain.repository.AuthRepository
-import com.tyshko.auth.security.crypto.PasswordHasher
-import com.tyshko.auth.security.jwt.JwtProvider
+import com.tyshko.auth.security.JwtProviderContract
+import com.tyshko.auth.security.PasswordHasherContract
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
-import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -20,17 +18,16 @@ class RegisterUseCaseTest {
 
     private lateinit var registerUseCase: RegisterUseCase
     private val mockAuthRepository: AuthRepository = mockk(relaxed = true)
-    private val mockJwtProvider: JwtProvider = mockk()
+    private val mockJwtProvider: JwtProviderContract = mockk()
+    private val mockPasswordHasher: PasswordHasherContract = mockk()
 
     @Before
     fun setup() {
-        registerUseCase = RegisterUseCase(mockAuthRepository, mockJwtProvider)
-        mockkObject(PasswordHasher)
-    }
-
-    @After
-    fun teardown() {
-        unmockkAll()
+        registerUseCase = RegisterUseCase(
+            authRepository = mockAuthRepository,
+            jwtProvider = mockJwtProvider,
+            passwordHasher = mockPasswordHasher
+        )
     }
 
     @Test
@@ -51,7 +48,8 @@ class RegisterUseCaseTest {
         val refreshToken = "refresh_token"
 
         coEvery { mockAuthRepository.checkEmailExists(any()) } returns false
-        every { PasswordHasher.hashPassword(password) } returns hashedPassword
+        // mockPasswordHasher — обычный interface mock, no mockkObject/Byte Buddy
+        every { mockPasswordHasher.hashPassword(password) } returns hashedPassword
         every { mockJwtProvider.generateAccessToken(any(), any()) } returns accessToken
         every { mockJwtProvider.generateRefreshToken(any()) } returns refreshToken
 
@@ -70,6 +68,6 @@ class RegisterUseCaseTest {
         val result = registerUseCase("user@test.com", "password")
 
         assertTrue(result is AuthResult.Error.Unknown)
-        assertTrue((result as AuthResult.Error.Unknown).cause == exception)
+        assertEquals(exception, (result as AuthResult.Error.Unknown).cause)
     }
 }

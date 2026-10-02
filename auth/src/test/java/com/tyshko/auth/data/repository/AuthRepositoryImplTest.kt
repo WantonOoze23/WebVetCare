@@ -25,13 +25,8 @@ class AuthRepositoryImplTest {
         authRepository = AuthRepositoryImpl(mockAuthDao, mockTokenStorage)
     }
 
-    // ──────────────────────────────────────────────────────────
-    // checkEmailExists — нормализация email (lowercase + trim)
-    // ──────────────────────────────────────────────────────────
-
     @Test
     fun `checkEmailExists returns true when email exists`() = runTest {
-        // DAO получает нормализованный email
         coEvery { mockAuthDao.isEmailExists("test@test.com") } returns true
 
         val result = authRepository.checkEmailExists("test@test.com")
@@ -42,12 +37,10 @@ class AuthRepositoryImplTest {
 
     @Test
     fun `checkEmailExists normalizes email to lowercase`() = runTest {
-        // Repository должен передать lowercase в DAO
         coEvery { mockAuthDao.isEmailExists("user@test.com") } returns false
 
         authRepository.checkEmailExists("User@TEST.com")
 
-        // Проверяем что в DAO попал именно нормализованный вариант
         coVerify(exactly = 1) { mockAuthDao.isEmailExists("user@test.com") }
     }
 
@@ -60,17 +53,12 @@ class AuthRepositoryImplTest {
         coVerify(exactly = 1) { mockAuthDao.isEmailExists("user@test.com") }
     }
 
-    // ──────────────────────────────────────────────────────────
-    // saveCredentials
-    // ──────────────────────────────────────────────────────────
-
     @Test
     fun `saveCredentials inserts entity with normalized email`() = runTest {
         val id = "1"
         val rawEmail = "Test@Test.com"
         val normalizedEmail = "test@test.com"
         val passwordHash = "hash"
-        // Entity должна содержать нормализованный email
         val expectedEntity = AuthCredentialEntity(id, normalizedEmail, passwordHash)
 
         coEvery { mockAuthDao.insertCredentials(expectedEntity) } returns Unit
@@ -80,16 +68,11 @@ class AuthRepositoryImplTest {
         coVerify(exactly = 1) { mockAuthDao.insertCredentials(expectedEntity) }
     }
 
-    // ──────────────────────────────────────────────────────────
-    // getPasswordHash
-    // ──────────────────────────────────────────────────────────
-
     @Test
     fun `getPasswordHash returns hash for normalized email`() = runTest {
         val expectedHash = "hash123"
         coEvery { mockAuthDao.getPasswordHashByEmail("test@test.com") } returns expectedHash
 
-        // Передаём с пробелами и uppercase — repository обязан нормализовать
         val result = authRepository.getPasswordHash("  TEST@test.com  ")
 
         assertEquals(expectedHash, result)
@@ -105,10 +88,6 @@ class AuthRepositoryImplTest {
         assertEquals(null, result)
     }
 
-    // ──────────────────────────────────────────────────────────
-    // getUserIdByEmail
-    // ──────────────────────────────────────────────────────────
-
     @Test
     fun `getUserIdByEmail returns id for normalized email`() = runTest {
         val expectedId = "user-123"
@@ -119,10 +98,6 @@ class AuthRepositoryImplTest {
         assertEquals(expectedId, result)
         coVerify(exactly = 1) { mockAuthDao.getUserIdByEmail("test@test.com") }
     }
-
-    // ──────────────────────────────────────────────────────────
-    // Token management
-    // ──────────────────────────────────────────────────────────
 
     @Test
     fun `saveTokens saves both access and refresh tokens to storage`() {

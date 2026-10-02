@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tyshko.auth.data.local.TokenStorage
 import com.tyshko.auth.domain.usecase.RefreshTokenUseCase
-import com.tyshko.auth.security.jwt.JwtProvider
+import com.tyshko.auth.security.JwtProviderContract
 import com.tyshko.auth.security.jwt.TokenValidationResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 
 class SessionViewModel(
     private val tokenStorage: TokenStorage,
-    private val jwtProvider: JwtProvider,
+    private val jwtProvider: JwtProviderContract,
     private val refreshTokenUseCase: RefreshTokenUseCase
 ) : ViewModel(){
 

@@ -2,13 +2,14 @@ package com.tyshko.auth.domain.usecase
 
 import com.tyshko.auth.domain.model.AuthResult
 import com.tyshko.auth.domain.repository.AuthRepository
-import com.tyshko.auth.security.crypto.PasswordHasher
-import com.tyshko.auth.security.jwt.JwtProvider
+import com.tyshko.auth.security.JwtProviderContract
+import com.tyshko.auth.security.PasswordHasherContract
 import java.util.UUID
 
 class RegisterUseCase(
     private val authRepository: AuthRepository,
-    private val jwtProvider: JwtProvider
+    private val jwtProvider: JwtProviderContract,
+    private val passwordHasher: PasswordHasherContract
 ) {
     suspend operator fun invoke(email: String, password: String): AuthResult {
         return try {
@@ -17,7 +18,7 @@ class RegisterUseCase(
             }
 
             val newUserId = UUID.randomUUID().toString()
-            val hashedPassword = PasswordHasher.hashPassword(password)
+            val hashedPassword = passwordHasher.hashPassword(password)
 
             authRepository.saveCredentials(newUserId, email, hashedPassword)
 

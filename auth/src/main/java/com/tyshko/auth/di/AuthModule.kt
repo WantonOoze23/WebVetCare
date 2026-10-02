@@ -8,15 +8,21 @@ import com.tyshko.auth.domain.repository.AuthRepository
 import com.tyshko.auth.domain.usecase.LoginUseCase
 import com.tyshko.auth.domain.usecase.RefreshTokenUseCase
 import com.tyshko.auth.domain.usecase.RegisterUseCase
+import com.tyshko.auth.security.JwtProviderContract
+import com.tyshko.auth.security.PasswordHasherContract
+import com.tyshko.auth.security.crypto.PasswordHasher
 import com.tyshko.auth.security.crypto.RsaKeyManager
 import com.tyshko.auth.security.jwt.JwtProvider
 import org.koin.android.ext.koin.androidContext
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val authModule = module {
 
     single { RsaKeyManager() }
-    single { JwtProvider(get()) }
+    single<JwtProviderContract> { JwtProvider(get()) }
+
+    single { PasswordHasher } bind PasswordHasherContract::class
 
     single { TokenStorage(context = androidContext()) }
 
@@ -30,9 +36,9 @@ val authModule = module {
 
     single { get<AuthDatabase>().authDao() }
 
-    single { AuthRepositoryImpl(get(), get()) as AuthRepository }
+    single { AuthRepositoryImpl(get(), get()) } bind AuthRepository::class
 
-    factory { LoginUseCase(get(), get()) }
-    factory { RegisterUseCase(get(), get()) }
+    factory { LoginUseCase(get(), get(), get()) }
+    factory { RegisterUseCase(get(), get(), get()) }
     factory { RefreshTokenUseCase(get(), get(), get()) }
 }

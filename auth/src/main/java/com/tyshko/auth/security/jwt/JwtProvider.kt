@@ -6,13 +6,14 @@ import com.auth0.jwt.exceptions.JWTVerificationException
 import com.auth0.jwt.exceptions.SignatureVerificationException
 import com.auth0.jwt.exceptions.TokenExpiredException
 import com.auth0.jwt.interfaces.DecodedJWT
+import com.tyshko.auth.security.JwtProviderContract
 import com.tyshko.auth.security.crypto.RsaKeyManager
 import java.security.Signature
 import java.security.interfaces.RSAPublicKey
 import java.util.Base64
 import java.util.Date
 
-class JwtProvider(private val keyManager: RsaKeyManager) {
+class JwtProvider(private val keyManager: RsaKeyManager) : JwtProviderContract{
 
     private val algorithm: Algorithm = object : Algorithm(ALGORITHM_NAME, SUGNATURE_ALGHORITM) {
         override fun sign(contentBytes: ByteArray): ByteArray {
@@ -37,7 +38,7 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
         }
     }
 
-    fun generateAccessToken(userId: String, roles: List<String>): String {
+    override fun generateAccessToken(userId: String, roles: List<String>): String {
         val now = System.currentTimeMillis()
         val validity = ACCESS_TOKEN_TLL_MS
 
@@ -50,7 +51,7 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
             .sign(algorithm)
     }
 
-    fun generateRefreshToken(userId: String): String {
+    override fun generateRefreshToken(userId: String): String {
         val now = System.currentTimeMillis()
         val validity = REFRESH_TOKEN_TTL_MS
 
@@ -62,7 +63,7 @@ class JwtProvider(private val keyManager: RsaKeyManager) {
             .sign(algorithm)
     }
 
-    fun validateToken(token: String): TokenValidationResult {
+    override fun validateToken(token: String): TokenValidationResult {
         return try {
             val verifier = JWT
                 .require(algorithm)
