@@ -3,7 +3,7 @@
 WebVetCare is a modern Android application built to connect veterinary doctors and pet owners. It provides a secure, locally-authenticated platform with distinct user roles (Doctor, Patient) and profile management.
 
 ## 📱 Screenshots
-<p>
+
 <imp src="/docs/images/landing.png" alt="Landing Screen" width="18%" />
 <imp src="/docs/images/register.png" alt="Register Screen" width="18%" />
 <imp src="/docs/images/login.png" alt="Login Screen" width="18%" />
@@ -12,7 +12,7 @@ WebVetCare is a modern Android application built to connect veterinary doctors a
 <imp src="/docs/images/dashboard_menu_open.png" alt="Dashboard Menu Open" width="18%" />
 <imp src="/docs/images/become_doctor.png" alt="Become Doctor Screen" width="18%" />
 <imp src="/docs/images/become_patient.png" alt="Become Patient Screen" width="18%" />
-</p>
+
 ## 🏗 Architecture
 
 The project strictly follows **Clean Architecture** principles and implements the **MVI (Model-View-Intent)** presentation pattern. It is deliberately multi-modular to enforce a one-way dependency graph and true separation of concerns.
