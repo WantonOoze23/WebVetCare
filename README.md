@@ -8,7 +8,7 @@ WebVetCare is a modern Android application built to connect veterinary doctors a
 <img src="/docs/images/register.png" alt="Register Screen" width="18%" />
 <img src="/docs/images/login.png" alt="Login Screen" width="18%" />
 <img src="/docs/images/dashboard.png" alt="Dashboard Screen" width="18%" />
-<img src="/docs/images/docs/images/dashboard_menu_collapsed.png" alt="Dashboard Menu Collapsed" width="18%" />
+<img src="/docs/images/dashboard_menu_collapsed.png" alt="Dashboard Menu Collapsed" width="18%" />
 <img src="/docs/images/dashboard_menu_open.png" alt="Dashboard Menu Open" width="18%" />
 <img src="/docs/images/become_doctor.png" alt="Become Doctor Screen" width="18%" />
 <img src="/docs/images/become_patient.png" alt="Become Patient Screen" width="18%" />
