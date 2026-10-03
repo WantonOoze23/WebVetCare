@@ -21,7 +21,7 @@ fun BecomeDoctorScreen(
         viewModel.effectFlow.collect { effect ->
             when (effect) {
                 is DashboardContract.Effect.Navigate -> onNavigate(effect.destination)
-                else -> {} // Skip snackbars since screen will pop
+                else -> {}
             }
         }
     }

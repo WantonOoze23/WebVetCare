@@ -9,8 +9,8 @@ import com.tyshko.user.domain.model.DoctorProfile
 import com.tyshko.user.domain.model.PatientProfile
 import com.tyshko.user.domain.model.Role
 import com.tyshko.user.domain.model.User
-import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -18,6 +18,8 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
 
 class UserRepositoryImplTest {
 
@@ -32,9 +34,9 @@ class UserRepositoryImplTest {
     @Test
     fun `getUser should return null when user not found`() = runTest {
         val userId = "123"
-        coEvery { mockUserDao.getUserWithProfiles(userId) } returns null
+        every { mockUserDao.getUserWithProfiles(userId) } returns flowOf(null)
 
-        val result = userRepository.getUser(userId)
+        val result = userRepository.getUser(userId).first()
 
         assertNull(result)
     }
@@ -47,9 +49,9 @@ class UserRepositoryImplTest {
         val patientProfileEntity = PatientProfileEntity(userId, "p@test.com", "000")
         val userWithProfiles = UserWithProfile(userEntity, doctorProfileEntity, patientProfileEntity)
 
-        coEvery { mockUserDao.getUserWithProfiles(userId) } returns userWithProfiles
+        every { mockUserDao.getUserWithProfiles(userId) } returns flowOf(userWithProfiles)
 
-        val result = userRepository.getUser(userId)
+        val result = userRepository.getUser(userId).first()
 
         assertNotNull(result)
         assertEquals(userId, result?.id)
@@ -99,5 +101,48 @@ class UserRepositoryImplTest {
 
         val expectedEntity = PatientProfileEntity(userId, "test2@test.com", "222")
         coVerify(exactly = 1) { mockUserDao.insertPatientProfile(expectedEntity) }
+    }
+
+    @Test
+    fun `getUser should return mapped User without profiles when profiles are null`() = runTest {
+        val userId = "123"
+        val userEntity = UserEntity(userId, "TestUser", "test@test.com", listOf("User"))
+        val userWithProfiles = UserWithProfile(userEntity, null, null)
+
+        every { mockUserDao.getUserWithProfiles(userId) } returns flowOf(userWithProfiles)
+
+        val result = userRepository.getUser(userId).first()
+
+        assertNotNull(result)
+        assertEquals(userId, result?.id)
+        assertNull(result?.doctorProfile)
+        assertNull(result?.patientProfile)
+    }
+
+    @Test
+    fun `getUser should ignore unknown roles and map valid ones`() = runTest {
+        val userId = "123"
+        val userEntity = UserEntity(userId, "TestUser", "test@test.com", listOf("User", "UNKNOWN_ROLE", "Doctor"))
+        val userWithProfiles = UserWithProfile(userEntity, null, null)
+
+        every { mockUserDao.getUserWithProfiles(userId) } returns flowOf(userWithProfiles)
+
+        val result = userRepository.getUser(userId).first()
+
+        assertEquals(listOf(Role.User, Role.Doctor), result?.roles)
+    }
+
+    @Test
+    fun `saveUser should only insert user entity when profiles are null`() = runTest {
+        val userId = "123"
+        val user = User(userId, "User", "test@test.com", listOf(Role.User), null, null)
+
+        userRepository.saveUser(user)
+
+        val expectedUserEntity = UserEntity(userId, "User", "test@test.com", listOf("User"))
+        coVerify(exactly = 1) { mockUserDao.insertUser(expectedUserEntity) }
+        
+        coVerify(exactly = 0) { mockUserDao.insertDoctorProfile(any()) }
+        coVerify(exactly = 0) { mockUserDao.insertPatientProfile(any()) }
     }
 }

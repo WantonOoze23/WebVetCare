@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 class UserRepositoryImpl(
-    private val UserDao: UserDao
+    private val userDao: UserDao
 ) : UserRepository {
     override fun getUser(userId: String): Flow<User?> {
-        return UserDao.getUserWithProfiles(userId).map { userWithProfile ->
+        return userDao.getUserWithProfiles(userId).map { userWithProfile ->
             if (userWithProfile == null) return@map null
 
             User(
@@ -52,7 +52,7 @@ class UserRepositoryImpl(
             roles = user.roles.map { it.name }
         )
 
-        UserDao.insertUser(userToSave)
+        userDao.insertUser(userToSave)
 
         user.patientProfile?.let{
             savePatientProfile(
@@ -80,7 +80,7 @@ class UserRepositoryImpl(
             availability = profile.availability
         )
 
-        UserDao.insertDoctorProfile(doctorToSave)
+        userDao.insertDoctorProfile(doctorToSave)
     }
 
     override suspend fun savePatientProfile(
@@ -93,7 +93,7 @@ class UserRepositoryImpl(
             contactEmail = profile.contactEmail
         )
 
-        UserDao.insertPatientProfile(patientToSave)
+        userDao.insertPatientProfile(patientToSave)
     }
 
 }

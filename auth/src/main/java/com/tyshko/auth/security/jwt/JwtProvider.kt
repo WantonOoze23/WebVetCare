@@ -32,7 +32,15 @@ class JwtProvider(private val keyManager: RsaKeyManager) : JwtProviderContract{
             verifier.initVerify(publicKey)
             verifier.update(contentBytes)
 
-            if (!verifier.verify(signatureBytes)) {
+            val isValid = try {
+                verifier.verify(signatureBytes)
+            } catch (e: java.security.SignatureException) {
+                false
+            } catch (e: IllegalArgumentException) {
+                false // Base64 decode error
+            }
+
+            if (!isValid) {
                 throw SignatureVerificationException(this)
             }
         }
