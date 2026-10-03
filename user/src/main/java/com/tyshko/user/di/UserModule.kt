@@ -20,5 +20,5 @@ val userModule = module {
 
     single { get<UserDatabase>().userDao() }
 
-    single { UserRepositoryImpl(get()) as UserRepository }
+    single<UserRepository> { UserRepositoryImpl(get())}
 }

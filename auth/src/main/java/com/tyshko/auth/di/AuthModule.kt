@@ -23,7 +23,7 @@ val authModule = module {
     single { RsaKeyManager() }
     single<JwtProviderContract> { JwtProvider(get()) }
 
-    single { PasswordHasher } bind PasswordHasherContract::class
+    single<PasswordHasherContract> { PasswordHasher }
 
     single { TokenStorage(context = androidContext()) }
 
@@ -39,7 +39,7 @@ val authModule = module {
 
     single { get<AuthDatabase>().authDao() }
 
-    single { AuthRepositoryImpl(get(), get()) } bind AuthRepository::class
+    single<AuthRepository> { AuthRepositoryImpl(get(), get()) }
 
     factory { LoginUseCase(get(), get(), get()) }
     factory { RegisterUseCase(get(), get(), get()) }
