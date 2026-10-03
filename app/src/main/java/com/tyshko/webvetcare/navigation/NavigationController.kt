@@ -96,13 +96,29 @@ fun NavigationController() {
                         )
                     }
                     entry<AppDestination.BecomeDoctor> {
-                        BecomeDoctorScreen()
+                        BecomeDoctorScreen(
+                            onNavigate = { destination ->
+                                if (destination == AppDestination.Dashboard) {
+                                    backStack.removeLastOrNull()
+                                } else {
+                                    backStack.add(destination)
+                                }
+                            }
+                        )
                     }
                     entry<AppDestination.DoctorProfile> {
                         DoctorProfileScreen()
                     }
                     entry<AppDestination.BecomePatient> {
-                        BecomePatientScreen()
+                        BecomePatientScreen(
+                            onNavigate = { destination ->
+                                if (destination == AppDestination.Dashboard) {
+                                    backStack.removeLastOrNull()
+                                } else {
+                                    backStack.add(destination)
+                                }
+                            }
+                        )
                     }
                     entry<AppDestination.PatientProfile> {
                         PatientProfileScreen()

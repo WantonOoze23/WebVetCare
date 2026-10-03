@@ -6,14 +6,25 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tyshko.user.domain.model.DoctorProfile
+import com.tyshko.webvetcare.navigation.AppDestination
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun BecomeDoctorScreen(
     modifier: Modifier = Modifier,
+    onNavigate: (AppDestination) -> Unit = {},
     viewModel: UserDashboardViewModel = koinViewModel()
 ) {
     val state by viewModel.dashboardState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        viewModel.effectFlow.collect { effect ->
+            when (effect) {
+                is DashboardContract.Effect.Navigate -> onNavigate(effect.destination)
+                else -> {} // Skip snackbars since screen will pop
+            }
+        }
+    }
 
     Column(
         modifier = modifier.fillMaxSize().padding(16.dp).statusBarsPadding(),

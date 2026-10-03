@@ -6,13 +6,24 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tyshko.user.domain.model.PatientProfile
+import com.tyshko.webvetcare.navigation.AppDestination
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun BecomePatientScreen(
     modifier: Modifier = Modifier,
+    onNavigate: (AppDestination) -> Unit = {},
     viewModel: UserDashboardViewModel = koinViewModel()
 ) {
+    LaunchedEffect(Unit) {
+        viewModel.effectFlow.collect { effect ->
+            when (effect) {
+                is DashboardContract.Effect.Navigate -> onNavigate(effect.destination)
+                else -> {}
+            }
+        }
+    }
+
     var phone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
 
