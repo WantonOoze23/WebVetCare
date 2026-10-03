@@ -8,6 +8,7 @@ import com.tyshko.auth.domain.repository.AuthRepository
 import com.tyshko.auth.domain.usecase.LoginUseCase
 import com.tyshko.auth.domain.usecase.RefreshTokenUseCase
 import com.tyshko.auth.domain.usecase.RegisterUseCase
+import com.tyshko.auth.data.local.migration.MIGRATION_1_2
 import com.tyshko.auth.security.JwtProviderContract
 import com.tyshko.auth.security.PasswordHasherContract
 import com.tyshko.auth.security.crypto.PasswordHasher
@@ -31,7 +32,9 @@ val authModule = module {
             context = androidContext(),
             klass = AuthDatabase::class.java,
             name = "auth_database"
-        ).build()
+        )
+            .addMigrations(MIGRATION_1_2)
+            .build()
     }
 
     single { get<AuthDatabase>().authDao() }

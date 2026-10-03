@@ -8,7 +8,7 @@ import com.tyshko.webvetcare.navigation.AppDestination
 class DashboardContract {
     data class State(
         val user: User? = null,
-        val isMenuExpanded: Boolean = true,
+        val isMenuExpanded: Boolean = false,
         val isLoading: Boolean = false,
     )
 
