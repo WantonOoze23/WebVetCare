@@ -9,33 +9,39 @@ import com.tyshko.user.domain.model.PatientProfile
 import com.tyshko.user.domain.model.Role
 import com.tyshko.user.domain.model.User
 import com.tyshko.user.domain.repository.UserRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 class UserRepositoryImpl(
     private val UserDao: UserDao
 ) : UserRepository {
-    override suspend fun getUser(userId: String): User? {
-        val userWithProfile = UserDao.getUserWithProfiles(userId) ?: return null
-        
-        return User(
-            id = userWithProfile.user.id,
-            userName = userWithProfile.user.userName,
-            email = userWithProfile.user.email,
-            roles = userWithProfile.user.roles.map { Role.valueOf(it) },
-            doctorProfile = userWithProfile.doctorProfile?.let {
-                DoctorProfile(
-                    specialization = it.specialization,
-                    licenseNumber = it.licenseNumber,
-                    clinicAddress = it.clinicAddress,
-                    availability = it.availability
-                )
-            },
-            patientProfile = userWithProfile.patientProfile?.let {
-                PatientProfile(
-                    contactPhoneNumber = it.contactPhoneNumber,
-                    contactEmail = it.contactEmail
-                )
-            }
-        )
+    override fun getUser(userId: String): Flow<User?> {
+        return UserDao.getUserWithProfiles(userId).map { userWithProfile ->
+            if (userWithProfile == null) return@map null
+
+            User(
+                id = userWithProfile.user.id,
+                userName = userWithProfile.user.userName,
+                email = userWithProfile.user.email,
+                roles = userWithProfile.user.roles.mapNotNull { roleStr ->
+                    runCatching { Role.valueOf(roleStr) }.getOrNull()
+                },
+                doctorProfile = userWithProfile.doctorProfile?.let {
+                    DoctorProfile(
+                        specialization = it.specialization,
+                        licenseNumber = it.licenseNumber,
+                        clinicAddress = it.clinicAddress,
+                        availability = it.availability
+                    )
+                },
+                patientProfile = userWithProfile.patientProfile?.let {
+                    PatientProfile(
+                        contactPhoneNumber = it.contactPhoneNumber,
+                        contactEmail = it.contactEmail
+                    )
+                }
+            )
+        }
     }
 
     override suspend fun saveUser(user: User) {

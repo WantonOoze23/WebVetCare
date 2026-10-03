@@ -9,13 +9,14 @@ import com.tyshko.user.data.local.entity.DoctorProfileEntity
 import com.tyshko.user.data.local.entity.PatientProfileEntity
 import com.tyshko.user.data.local.entity.UserEntity
 import com.tyshko.user.data.local.entity.UserWithProfile
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface UserDao {
 
     @Transaction
     @Query("SELECT * FROM users WHERE id = :userId")
-    suspend fun getUserWithProfiles(userId: String): UserWithProfile?
+    fun getUserWithProfiles(userId: String): Flow<UserWithProfile?>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserEntity)

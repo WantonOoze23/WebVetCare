@@ -12,6 +12,7 @@ import com.tyshko.user.domain.model.PatientProfile
 import com.tyshko.user.domain.model.Role
 import com.tyshko.user.domain.repository.UserRepository
 import com.tyshko.webvetcare.navigation.AppDestination
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +37,18 @@ class UserDashboardViewModel(
         onEvent(DashboardContract.Event.FetchUser)
     }
 
+    private var userObserveJob: Job? = null
+
+    private fun observeUser(userId: String) {
+        userObserveJob?.cancel()
+        userObserveJob = viewModelScope.launch {
+            userRepository.getUser(userId).collect { user ->
+                Log.d("UserDashboardViewModel", "Flow updated user: $user")
+                _dashboardState.update { it.copy(user = user, isLoading = false) }
+            }
+        }
+    }
+
     fun onEvent(event: DashboardContract.Event) {
         when (event) {
             DashboardContract.Event.FetchUser -> fetchUser()
@@ -48,7 +61,6 @@ class UserDashboardViewModel(
 
     private fun fetchUser() = viewModelScope.launch {
         _dashboardState.update { it.copy(isLoading = true) }
-
 
         try{
             val token = tokenStorage.getAccessToken()
@@ -69,9 +81,7 @@ class UserDashboardViewModel(
             }
 
             if (currentUserId != null){
-                val user = userRepository.getUser(currentUserId)
-                Log.d("UserDashboardViewModel", "Fetched user: $user")
-                _dashboardState.update { it.copy(user = user, isLoading = false) }
+                observeUser(currentUserId)
             } else {
                 Log.d("UserDashboardViewModel", "Access token expired, attempting refresh...")
                 val newAccessToken = refreshTokenUseCase()
@@ -83,9 +93,7 @@ class UserDashboardViewModel(
                     }
 
                     if (refreshedUserId != null) {
-                        val user = userRepository.getUser(refreshedUserId)
-                        Log.d("UserDashboardViewModel", "Token refreshed, fetched user: $user")
-                        _dashboardState.update { it.copy(user = user, isLoading = false) }
+                        observeUser(refreshedUserId)
                         sendEffect(DashboardContract.Effect.ShowSnackbar("Session renewed automatically."))
                     } else {
                         forceLogout()
