@@ -25,7 +25,7 @@ val authModule = module {
             context = androidContext(),
             klass = AuthDatabase::class.java,
             name = "auth_database"
-        ).build()
+        ).fallbackToDestructiveMigration(dropAllTables = true).build()
     }
 
     single { get<AuthDatabase>().authDao() }

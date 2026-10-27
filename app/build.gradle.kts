@@ -46,6 +46,7 @@ android {
 dependencies {
     implementation(project(":auth"))
     implementation(project(":user"))
+    implementation(project(":config"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -74,13 +75,5 @@ dependencies {
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
     implementation(libs.kotlinx.serialization.json)
-
-
-    // Firebase
-
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.analytics)
-
-    implementation(libs.firebase.config)
 
 }

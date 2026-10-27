@@ -10,7 +10,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import com.tyshko.webvetcare.firebase.domain.repository.SettingsRepository
+import com.tyshko.config.domain.repository.SettingsRepository
 import com.tyshko.webvetcare.ui.theme.Padding
 import org.koin.compose.koinInject
 import kotlin.random.Random
@@ -22,14 +22,15 @@ fun LandingScreen(
     navigationToRegisterScreen: () -> Unit,
     settingsRepository: SettingsRepository = koinInject()
 ) {
-    var welcomeMessage by remember { mutableStateOf(settingsRepository.getWelcomeMessage()) }
-    var particleColorHex by remember { mutableStateOf(settingsRepository.getLandingColor()) }
+    var welcomeMessage by remember { mutableStateOf(settingsRepository.getConfig().welcomeMessage) }
+    var particleColorHex by remember { mutableStateOf(settingsRepository.getConfig().landingColor) }
 
-    LaunchedEffect(Unit) {
-        settingsRepository.getConfigUpdateListener {
-            welcomeMessage = settingsRepository.getWelcomeMessage()
-            particleColorHex = settingsRepository.getLandingColor()
+    DisposableEffect(Unit) {
+        val registration = settingsRepository.addConfigUpdateListener {
+            welcomeMessage = settingsRepository.getConfig().welcomeMessage
+            particleColorHex = settingsRepository.getConfig().landingColor
         }
+        onDispose { registration.close() }
     }
     val particleColor = remember(particleColorHex) {
         try {

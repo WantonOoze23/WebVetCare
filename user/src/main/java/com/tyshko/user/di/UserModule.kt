@@ -15,7 +15,7 @@ val userModule = module {
             context = androidContext(),
             klass = UserDatabase::class.java,
             name = "user_database"
-        ).build()
+        ).fallbackToDestructiveMigration(dropAllTables = true).build()
     }
 
     single { get<UserDatabase>().userDao() }

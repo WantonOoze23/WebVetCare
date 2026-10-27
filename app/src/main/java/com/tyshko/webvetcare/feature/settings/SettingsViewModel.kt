@@ -3,7 +3,7 @@ package com.tyshko.webvetcare.feature.settings
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.tyshko.webvetcare.firebase.domain.repository.SettingsRepository
+import com.tyshko.config.domain.repository.SettingsRepository
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 class SettingsViewModel(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
+    private var listenerRegistration: AutoCloseable? = null
 
     private val _state = MutableStateFlow(SettingsContract.State())
     val state: StateFlow<SettingsContract.State> = _state
@@ -21,10 +22,12 @@ class SettingsViewModel(
     private val _effect = Channel<SettingsContract.Effect>()
     val effectFlow = _effect.receiveAsFlow()
 
-    init {
-        loadCurrentValues()
-        fetchRemoteConfig()
-        listenForUpdates()
+    fun startListening() {
+        listenerRegistration = settingsRepository.addConfigUpdateListener { loadCurrentValues() }
+    }
+    override fun onCleared() {
+        listenerRegistration?.close()
+        super.onCleared()
     }
 
     fun onEvent(event: SettingsContract.Event) {
@@ -35,12 +38,14 @@ class SettingsViewModel(
     }
 
     private fun loadCurrentValues() {
+        val config = settingsRepository.getConfig()
         _state.update {
             it.copy(
-                testData = settingsRepository.getTestData(),
-                landingColor = settingsRepository.getLandingColor(),
-                welcomeMessage = settingsRepository.getWelcomeMessage(),
-                isOnline = settingsRepository.isOnline()
+                testData = config.testData,
+                appLanguage = config.appLanguage,
+                landingColor = config.landingColor,
+                welcomeMessage = config.welcomeMessage,
+                isOnline = config.isOnline
             )
         }
     }
@@ -60,16 +65,6 @@ class SettingsViewModel(
                 sendEffect(SettingsContract.Effect.ShowSnackbar("Failed to fetch configuration"))
             } finally {
                 _state.update { it.copy(isLoading = false) }
-            }
-        }
-    }
-
-    private fun listenForUpdates() {
-        settingsRepository.getConfigUpdateListener {
-            Log.d("SettingsViewModel", "Real-time config update received")
-            loadCurrentValues()
-            viewModelScope.launch {
-                sendEffect(SettingsContract.Effect.ShowSnackbar("Configuration hot-reloaded"))
             }
         }
     }

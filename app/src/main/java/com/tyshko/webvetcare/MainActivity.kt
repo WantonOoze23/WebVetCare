@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.tyshko.auth.di.authModule
+import com.tyshko.config.di.configModule
 import com.tyshko.user.di.userModule
 import com.tyshko.webvetcare.di.appModule
 import com.tyshko.webvetcare.navigation.NavigationController
@@ -28,7 +29,8 @@ class MainActivity : ComponentActivity() {
                     listOf(
                         authModule,
                         userModule,
-                        appModule
+                        appModule,
+                        configModule
                     )
                 )
             }

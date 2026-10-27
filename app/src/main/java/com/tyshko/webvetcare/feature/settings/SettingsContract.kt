@@ -3,6 +3,7 @@ package com.tyshko.webvetcare.feature.settings
 class SettingsContract {
 
     data class State(
+        val appLanguage: String = "",
         val testData: String = "",
         val landingColor: String = "",
         val welcomeMessage: String = "",

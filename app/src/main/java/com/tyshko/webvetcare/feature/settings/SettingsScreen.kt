@@ -22,6 +22,9 @@ fun SettingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
+        viewModel.onEvent(SettingsContract.Event.LoadSettings)
+        viewModel.onEvent(SettingsContract.Event.RefreshConfig)
+        viewModel.startListening()
         viewModel.effectFlow.collect { effect ->
             when (effect) {
                 is SettingsContract.Effect.ShowSnackbar -> snackbarHostState.showSnackbar(effect.message)
@@ -51,6 +54,11 @@ fun SettingsScreen(
         SettingsInfoCard(
             title = "Diagnostic Test Data",
             value = state.testData
+        )
+
+        SettingsInfoCard(
+            title = "App Language",
+            value = state.appLanguage
         )
 
         SettingsInfoCard(
@@ -100,7 +108,7 @@ fun ConfigSourceBadge(isOnline: Boolean) {
     else
         MaterialTheme.colorScheme.onErrorContainer
 
-    val label = if (isOnline) "Online (Firebase)" else "Offline (In-App Defaults)"
+    val label = if (isOnline) "Online" else "Offline"
 
     Box(
         modifier = Modifier

@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?><defaults>
   <entry>
     <key>test_data</key>
-    <value>offline_fallback_value</value>
+    <value>Online_value</value>
   </entry>
   <entry>
     <key>landing_particle_color</key>
-    <value>#6650A4</value>
+    <value>#f1325b</value>
   </entry>
   <entry>
     <key>welcome_message</key>
-    <value>Your online veterinary care platform</value>
+    <value>Thank you for choosing us</value>
+  </entry>
+  <entry>
+    <key>app_language</key>
+    <value>en</value>
   </entry>
 </defaults>
