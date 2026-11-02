@@ -9,4 +9,5 @@ sealed class AppDestination : NavKey {
     @Serializable data object Login : AppDestination()
     @Serializable data object Register : AppDestination()
     @Serializable data object Dashboard : AppDestination()
+    @Serializable data object Settings : AppDestination()
 }

@@ -38,15 +38,6 @@ fun SettingsScreen(
             .padding(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header
-        Text(
-            text = "Settings",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        HorizontalDivider()
-
-        // Config Source Status Badge
         ConfigSourceBadge(isOnline = state.isOnline)
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -73,7 +64,6 @@ fun SettingsScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Refresh Button
         Button(
             onClick = { viewModel.onEvent(SettingsContract.Event.RefreshConfig) },
             enabled = !state.isLoading,

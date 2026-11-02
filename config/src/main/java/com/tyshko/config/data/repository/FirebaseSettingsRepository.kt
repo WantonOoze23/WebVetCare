@@ -10,14 +10,13 @@ import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.tyshko.config.R
 import com.tyshko.config.domain.model.SettingsConfig
 import com.tyshko.config.domain.repository.SettingsRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.tasks.await
 
 class FirebaseSettingsRepository(
-    private val debug: Boolean = false
-) : SettingsRepository {
-
+    private val debug: Boolean = false,
     private val remoteConfig: FirebaseRemoteConfig = FirebaseRemoteConfig.getInstance()
-
+) : SettingsRepository {
     private var fetchedSuccessfully: Boolean = false
 
     init {
@@ -33,6 +32,8 @@ class FirebaseSettingsRepository(
             val result = remoteConfig.fetchAndActivate().await()
             fetchedSuccessfully = true
             result
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: FirebaseRemoteConfigFetchThrottledException) {
             Log.w("FirebaseSettingsRepo", "Fetch throttled in manual call: ${e.message}")
             false

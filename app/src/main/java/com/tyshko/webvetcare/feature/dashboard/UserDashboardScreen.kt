@@ -29,6 +29,7 @@ import org.koin.androidx.compose.koinViewModel
 fun UserDashboardScreen(
     modifier: Modifier = Modifier,
     onNavigateToLogin: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
     viewModel: UserDashboardViewModel = koinViewModel()
 ) {
     val state by viewModel.dashboardState.collectAsState()
@@ -52,24 +53,27 @@ fun UserDashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Боковое меню (Side Navigation Menu)
             SideNavigationMenu(
                 isExpanded = state.isMenuExpanded,
                 userRoles = state.user?.roles ?: emptyList(),
                 currentRoute = state.currentRoute,
-                onRouteSelected = { viewModel.onEvent(DashboardContract.Event.ChangeRoute(it)) },
+                onRouteSelected = { route ->
+                    if (route == DashboardContract.DashboardRoute.Settings) {
+                        onNavigateToSettings()
+                    } else {
+                        viewModel.onEvent(DashboardContract.Event.ChangeRoute(route))
+                    }
+                },
                 onToggleMenu = { viewModel.onEvent(DashboardContract.Event.ToggleMenu) },
                 onLogout = { viewModel.onEvent(DashboardContract.Event.OnLogout) }
             )
 
-            // Основной контент
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Header (Имя пользователя)
                 Text(
                     text = if (state.isLoading) "Loading..." else "Welcome, ${state.user?.userName ?: "Guest"}",
                     style = MaterialTheme.typography.headlineMedium
@@ -77,7 +81,6 @@ fun UserDashboardScreen(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-                // Динамическое переключение контента на основе выбранного роута
                 when (state.currentRoute) {
                     DashboardContract.DashboardRoute.UserScreen -> {
                         UserProfileContent(
@@ -101,9 +104,8 @@ fun UserDashboardScreen(
                     DashboardContract.DashboardRoute.PatientProfile -> {
                         PatientProfileContent(profile = state.user?.patientProfile)
                     }
-                    DashboardContract.DashboardRoute.Settings -> {
-                        SettingsScreen()
-                    }
+                    // Settings открывается отдельным destination (см. onRouteSelected)
+                    DashboardContract.DashboardRoute.Settings -> Unit
                 }
             }
         }

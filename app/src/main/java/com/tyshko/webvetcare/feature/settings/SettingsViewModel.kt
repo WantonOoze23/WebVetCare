@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.tyshko.config.domain.repository.SettingsRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,10 +20,11 @@ class SettingsViewModel(
     private val _state = MutableStateFlow(SettingsContract.State())
     val state: StateFlow<SettingsContract.State> = _state
 
-    private val _effect = Channel<SettingsContract.Effect>()
+    private val _effect = Channel<SettingsContract.Effect>(Channel.BUFFERED)
     val effectFlow = _effect.receiveAsFlow()
 
     fun startListening() {
+        listenerRegistration?.close()
         listenerRegistration = settingsRepository.addConfigUpdateListener { loadCurrentValues() }
     }
     override fun onCleared() {
@@ -60,6 +62,8 @@ class SettingsViewModel(
                 if (activated) {
                     sendEffect(SettingsContract.Effect.ShowSnackbar("Configuration updated from Firebase"))
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Log.e("SettingsViewModel", "Failed to fetch remote config", e)
                 sendEffect(SettingsContract.Effect.ShowSnackbar("Failed to fetch configuration"))

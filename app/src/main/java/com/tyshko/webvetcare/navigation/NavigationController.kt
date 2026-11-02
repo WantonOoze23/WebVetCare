@@ -15,6 +15,8 @@ import com.tyshko.webvetcare.feature.auth.login.LoginScreen
 import com.tyshko.webvetcare.feature.auth.register.RegistrationScreen
 import com.tyshko.webvetcare.feature.dashboard.UserDashboardScreen
 import com.tyshko.webvetcare.feature.landing.LandingScreen
+import com.tyshko.webvetcare.feature.settings.SettingsHostScreen
+import com.tyshko.webvetcare.feature.settings.SettingsScreen
 import org.koin.compose.koinInject
 
 @Composable
@@ -49,7 +51,8 @@ fun NavigationController() {
             entry<AppDestination.Landing> {
                 LandingScreen(
                     navigationToLoginScreen = { backStack.add(AppDestination.Login) },
-                    navigationToRegisterScreen = { backStack.add(AppDestination.Register) }
+                    navigationToRegisterScreen = { backStack.add(AppDestination.Register) },
+                    navigationToSettingsScreen = { backStack.add(AppDestination.Settings) }
                 )
             }
 
@@ -78,8 +81,14 @@ fun NavigationController() {
                     onNavigateToLogin = {
                         backStack.clear()
                         backStack.add(AppDestination.Login)
-                    }
+                    },
+                    onNavigateToSettings = { backStack.add(AppDestination.Settings) }
                 )
+            }
+
+
+            entry<AppDestination.Settings> {
+                SettingsHostScreen(onBack = { backStack.removeLastOrNull() })
             }
         }
     )

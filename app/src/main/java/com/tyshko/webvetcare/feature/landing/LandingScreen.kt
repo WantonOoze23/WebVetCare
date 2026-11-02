@@ -4,6 +4,8 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +22,7 @@ fun LandingScreen(
     modifier: Modifier = Modifier,
     navigationToLoginScreen: () -> Unit,
     navigationToRegisterScreen: () -> Unit,
+    navigationToSettingsScreen: () -> Unit,
     settingsRepository: SettingsRepository = koinInject()
 ) {
     var welcomeMessage by remember { mutableStateOf(settingsRepository.getConfig().welcomeMessage) }
@@ -46,6 +49,20 @@ fun LandingScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         FloatingParticles(particleColor = particleColor)
+
+        IconButton(
+            onClick = navigationToSettingsScreen,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .statusBarsPadding()
+                .padding(Padding.extra)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = "Settings",
+                tint = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
+            )
+        }
 
         Column(
             modifier = Modifier
