@@ -23,3 +23,4 @@ rootProject.name = "WebVetCare"
 include(":app")
 include(":auth")
 include(":user")
+include(":config")

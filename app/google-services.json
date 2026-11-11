@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "266942862942",
+    "project_id": "web-vet-care",
+    "storage_bucket": "web-vet-care.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:266942862942:android:564232282c3c9e523146cf",
+        "android_client_info": {
+          "package_name": "com.tyshko.webvetcare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCa2qLLFBi8oFbodLwDiXDs3TggVeXKi_0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
